@@ -1,0 +1,15 @@
+<launch>
+    <arg name="file_name" />
+    <arg name="road_left_width" />
+    <arg name="road_right_width" />
+    <arg name="back_forward_reselution" />
+    <arg name="road_line_simple_seg_dis" />
+
+    <node name="road_line" pkg="road_line" type="road_line" output="screen">
+        <param name="file_name" type="str" value="$(arg file_name)" />
+        <param name="road_left_width" type="double" value="$(arg road_left_width)" />
+        <param name="road_right_width" type="double" value="$(arg road_right_width)" />
+        <param name="back_forward_reselution" type="double" value="$(arg back_forward_reselution)" />
+        <param name="road_line_simple_seg_dis" type="double" value="$(arg road_line_simple_seg_dis)" />
+    </node>
+</launch>
