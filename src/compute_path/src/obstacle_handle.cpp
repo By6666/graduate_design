@@ -1,12 +1,12 @@
 #include "compute_path/compute_path.h"
 
-void HybridAstar::CreateHollowList() {
-  std::vector<PointSet_type>().swap(hollow_list_);
+// void HybridAstar::CreateHollowList() {
+//   std::vector<PointSet_type>().swap(hollow_list_);
 
-  for (auto& elem : hollow_info_.boxes) {
-    hollow_list_.emplace_back(GetHollowFrame(elem.pose, elem.dimensions));
-  }
-}
+//   for (auto& elem : obstacle_info.boxes) {
+//     hollow_list_.emplace_back(GetHollowFrame(elem.pose, elem.dimensions));
+//   }
+// }
 
 // get hollow frame
 /* truck ego exp:

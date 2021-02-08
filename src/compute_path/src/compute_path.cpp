@@ -1,10 +1,3 @@
-/**
- * 求出1~13的整数中1出现的次数,并算出100~1300的整数中1出现的次数？
- * 为此他特别数了一下1~13中包含1的数字有1、10、11、12、13因此共出现6次,但是对于后面问题他就没辙了。
- * ACMer希望你们帮帮他,并把问题更加普遍化,可以很快的求出任意非负整数区间中1出现的次数（从1
- * 到 n 中1出现的次数）。
- * **/
-
 #include "compute_path/compute_path.h"
 
 HybridAstar::HybridAstar() {
@@ -28,8 +21,18 @@ HybridAstar::HybridAstar() {
   private_nh.param<double>("heur_yaw_cof_goal", heur_yaw_cof_goal_, 20.0);
   private_nh.param<double>("heur_yaw_cof_last", heur_yaw_cof_last_, 20.0);
   private_nh.param<double>("heur_curvature_cof", heur_curvature_cof_, 10.0);
+  private_nh.param<double>("heur_reference_line_cof", reference_line_cof_, 10.0);
   private_nh.param<double>("detect_collision_rate", detect_collision_rate_,
                            0.5);
+
+  //** discrete map param
+  private_nh.param<int>("map_width", map_width_, 100);
+  private_nh.param<int>("map_heigh", map_heigh_, 100);
+  private_nh.param<double>("map_origin_x", map_origin_.x, -10.0);
+  private_nh.param<double>("map_resolutin", map_resolution_, 1.0);
+
+  map_origin_.y = -map_heigh_ / 2;
+  map_origin_.z = 0.0;
 
   //** 待删除
   discrete_angle_ = 2.0 * M_PI / static_cast<double>(angle_size_);
@@ -191,7 +194,7 @@ void HybridAstar::UpdatePoseShow(const ros::Publisher& pub) {
   start_pose.type = 2;
   start_pose.action = visualization_msgs::Marker::ADD;
 
-  start_pose.pose = start_pose_;
+  start_pose.pose = prime_start_pose_;
 
   start_pose.scale.x = 0.2;
   start_pose.scale.y = 0.2;
@@ -205,7 +208,7 @@ void HybridAstar::UpdatePoseShow(const ros::Publisher& pub) {
   show_array.markers.push_back(start_pose);
 
   // show update_pass set
-  UPDATE_SET update_pass_set_tf = UpdateSetTransform(start_pose_);
+  UPDATE_SET update_pass_set_tf = UpdateSetTransform(prime_start_pose_);
   visualization_msgs::Marker update_pass_pose;
   update_pass_pose.header.frame_id = "global";
 
@@ -335,6 +338,7 @@ geometry_msgs::Pose HybridAstar::PoseTransformPath(
 
   return temp_pose;
 }
+
 AstarNode HybridAstar::PoseTransform(const AstarNode* const central,
                                      const geometry_msgs::Pose& pose) {
   AstarNode temp_node;
@@ -374,8 +378,18 @@ void HybridAstar::UpgrateParam() {
   private_nh.param<double>("heur_yaw_cof_goal", heur_yaw_cof_goal_, 20.0);
   private_nh.param<double>("heur_yaw_cof_last", heur_yaw_cof_last_, 20.0);
   private_nh.param<double>("heur_curvature_cof", heur_curvature_cof_, 10.0);
+  private_nh.param<double>("heur_reference_line_cof", reference_line_cof_, 10.0);
   private_nh.param<double>("detect_collision_rate", detect_collision_rate_,
                            0.5);
+
+  //** discrete map param
+  private_nh.param<int>("map_width", map_width_, 100);
+  private_nh.param<int>("map_heigh", map_heigh_, 100);
+  private_nh.param<double>("map_origin_x", map_origin_.x, -10.0);
+  private_nh.param<double>("map_resolutin", map_resolution_, 1.0);
+
+  map_origin_.y = -map_heigh_ / 2;
+  map_origin_.z = 0.0;
 
   // discrete_angle_ = 2.0 * M_PI / static_cast<double>(angle_size_);
 
@@ -445,28 +459,13 @@ void HybridAstar::Init() {
   prime_path_temp_.clear();
   prime_path_optimize_.clear();
 
-  CreateHollowList();
+  // CreateHollowList();
+
+  // calculate start and goal
+  CalculateStartAndGoalPoint();
 
   // KDTree create for road bounder & obslist
   CreateKDTreeBounderInfo();
-
-  goal_pose_id_ = CalculateID(goal_pose_.position.x, goal_pose_.position.y,
-                              tf::getYaw(goal_pose_.orientation));
-  start_pose_id_ = CalculateID(start_pose_.position.x, start_pose_.position.y,
-                               tf::getYaw(start_pose_.orientation));
-
-  double start_h =
-      CalculateDisTwoPoint(start_pose_.position, goal_pose_.position);
-  node_stg_[goal_pose_id_] = AstarNode(goal_pose_, DBL_MAX, 0.0);
-  node_stg_[start_pose_id_] = AstarNode(start_pose_, 0.0, start_h);
-
-  goal_info_ = &node_stg_[goal_pose_id_];
-  start_info_ = &node_stg_[start_pose_id_];
-  // std::cout << "goal yaw = " << goal_info_->yaw << std::endl;
-
-  // start point push openlist
-  openlist_.emplace(start_pose_id_, KeyValue(start_info_->h, 0.0));
-  start_info_->state = STATE::OPEN;
 }
 
 // get neighbors
@@ -667,6 +666,10 @@ bool HybridAstar::ExecuteHybridAstar() {
   RecurPath();
 
   bool path_flg = FinalPath();
+
+  // path frame convert
+  ConvertPathFrame();
+  
   if (!flag) {
     HintShow("Path Optimize Failed !!");
     return false;
@@ -695,23 +698,23 @@ void HybridAstar::PrintPath() {
               << tf::getYaw(elem.orientation) << std::endl;
   }
 
-  std::cout << "*************curvature*************" << std::endl;
-  // std::cout << "]" << std::endl;
-  // std::cout << "[";
-  curvature_data_stg_.resize(final_path_.size() - 1);
-  for (int i = 1; i < final_path_.size(); ++i) {
-    double temp_curve =
-        TranformYawRange(tf::getYaw(final_path_[i].orientation) -
-                         tf::getYaw(final_path_[i - 1].orientation)) /
-        std::hypot(final_path_[i].position.x - final_path_[i - 1].position.x,
-                   final_path_[i].position.y - final_path_[i - 1].position.y);
-    // std::cout << std::round(temp_curve *
-    //                         (update_points_orientation_stg_.size() - 1) *
-    //                         min_turning_radius_)
-    //           << std::endl;
-    std::cout << temp_curve << std::endl;
-    curvature_data_stg_[i - 1] = temp_curve;
-  }
+  // std::cout << "*************curvature*************" << std::endl;
+  // // std::cout << "]" << std::endl;
+  // // std::cout << "[";
+  // curvature_data_stg_.resize(final_path_.size() - 1);
+  // for (int i = 1; i < final_path_.size(); ++i) {
+  //   double temp_curve =
+  //       TranformYawRange(tf::getYaw(final_path_[i].orientation) -
+  //                        tf::getYaw(final_path_[i - 1].orientation)) /
+  //       std::hypot(final_path_[i].position.x - final_path_[i - 1].position.x,
+  //                  final_path_[i].position.y - final_path_[i - 1].position.y);
+  //   // std::cout << std::round(temp_curve *
+  //   //                         (update_points_orientation_stg_.size() - 1) *
+  //   //                         min_turning_radius_)
+  //   //           << std::endl;
+  //   std::cout << temp_curve << std::endl;
+  //   curvature_data_stg_[i - 1] = temp_curve;
+  // }
   // std::cout << "]" << std::endl;
 }
 
@@ -732,44 +735,44 @@ void HybridAstar::PrintPath() {
 
 // 检测碰撞 old by xc
 // 做法:将truck投影的平面上,然后检测每一个点是否是障碍物
-bool HybridAstar::detectCollision(const AstarNode& node) {
-  // define the truck as rectangle
-  double left = -1.0 * truck_base2back_;
-  double right = truck_length_ - truck_base2back_;
-  double top = truck_width_ / 2;
-  double bottom = -1.0 * truck_width_ / 2;
-  double resolution = 1.0;
+// bool HybridAstar::detectCollision(const AstarNode& node) {
+//   // define the truck as rectangle
+//   double left = -1.0 * truck_base2back_;
+//   double right = truck_length_ - truck_base2back_;
+//   double top = truck_width_ / 2;
+//   double bottom = -1.0 * truck_width_ / 2;
+//   double resolution = 1.0;
 
-  // std::cout << "truck_width_:" << truck_width_ << std::endl;
+//   // std::cout << "truck_width_:" << truck_width_ << std::endl;
 
-  // Coordinate of base_link in ogm frame
-  double one_angle_range = 2.0 * M_PI / angle_size_;
-  double base_x = node.x;
-  double base_y = node.y;
-  double base_theta = node.yaw;
-  // std::cout<< "base_theta: " << base_theta << std::endl;
+//   // Coordinate of base_link in ogm frame
+//   double one_angle_range = 2.0 * M_PI / angle_size_;
+//   double base_x = node.x;
+//   double base_y = node.y;
+//   double base_theta = node.yaw;
+//   // std::cout<< "base_theta: " << base_theta << std::endl;
 
-  // Calculate cos and sin in advance
-  double cos_theta = std::cos(base_theta);
-  double sin_theta = std::sin(base_theta);
+//   // Calculate cos and sin in advance
+//   double cos_theta = std::cos(base_theta);
+//   double sin_theta = std::sin(base_theta);
 
-  // Convert each point to index and check if the node is Obstacle
-  for (double x = left; x < right; x += resolution) {
-    for (double y = top + 1.0; y >= bottom; y -= resolution) {
-      // 2D coordinate rotate
-      double index_x = (x * cos_theta - y * sin_theta + base_x) / resolution;
-      double index_y = (x * sin_theta + y * cos_theta + base_y) / resolution;
+//   // Convert each point to index and check if the node is Obstacle
+//   for (double x = left; x < right; x += resolution) {
+//     for (double y = top + 1.0; y >= bottom; y -= resolution) {
+//       // 2D coordinate rotate
+//       double index_x = (x * cos_theta - y * sin_theta + base_x) / resolution;
+//       double index_y = (x * sin_theta + y * cos_theta + base_y) / resolution;
 
-      if (!IsInMap(index_x, index_y)) {
-        return true;
-      }
-      if (IsObstacle(calculateXYIndexMap(index_x, index_y))) {
-        return true;
-      }
-    }
-  }
-  return false;
-}
+//       if (!IsInMap(index_x, index_y)) {
+//         return true;
+//       }
+//       if (IsObstacle(calculateXYIndexMap(index_x, index_y))) {
+//         return true;
+//       }
+//     }
+//   }
+//   return false;
+// }
 
 bool HybridAstar::DetectCollision(const AstarNode* const node_p,
                                   const PATH_TYPE& update_set) {
@@ -822,4 +825,103 @@ bool HybridAstar::NearestInTruckFrame(const PointSet_type& truck_frame,
       flag = !flag;
   }
   return flag;
+}
+
+void HybridAstar::CreateKDTreeBounderInfo() {
+  ros::WallTime start = ros::WallTime::now();
+
+  KDTreeSP::pointVec temp_vec;
+  double yaw = -tf::getYaw(prime_start_pose_.orientation);
+
+  double prime_x = prime_start_pose_.position.x;
+  double prime_y = prime_start_pose_.position.y;
+
+  for (const auto& elem : bounder_info_) {
+    double temp_x = elem.front() - prime_x;
+    double temp_y = elem.back() - prime_y;
+
+    temp_vec.push_back(
+        KDTreeSP::point_t{temp_x * cos(yaw) - temp_y * sin(yaw),
+                          temp_x * sin(yaw) + temp_y * cos(yaw)});
+  }
+
+  kdtree_bounder_ = KDTreeSP::KDTree(temp_vec);
+  ros::WallTime end = ros::WallTime::now();
+
+  std::cout << "KDTree create *** size:" << temp_vec.size()
+            << "  time:" << (end - start).toSec() * 1000 << " ms" << std::endl;
+
+  for (auto& elem : ref_line_) {
+    double temp_x = elem.x - prime_x;
+    double temp_y = elem.y - prime_y;
+
+    elem.x = temp_x * cos(yaw) - temp_y * sin(yaw);
+    elem.y = temp_x * sin(yaw) + temp_y * cos(yaw);
+  }
+}
+
+void HybridAstar::CalculateStartAndGoalPoint() {
+  // set start pose
+  start_pose_.position.x = 0.0;
+  start_pose_.position.y = 0.0;
+
+  start_pose_.orientation = tf::createQuaternionMsgFromYaw(0.0);
+
+  // get goal pose in start pose frame
+  double temp_x = prime_goal_pose_.position.x - prime_start_pose_.position.x;
+  double temp_y = prime_goal_pose_.position.y - prime_start_pose_.position.y;
+  double temp_yaw = tf::getYaw(prime_goal_pose_.orientation);
+
+  //** 坐标相对位置不变，坐标系旋转，所以yaw取负
+  double yaw = -tf::getYaw(prime_start_pose_.orientation);
+
+  goal_pose_.position.x = temp_x * cos(yaw) - temp_y * sin(yaw);
+  goal_pose_.position.y = temp_x * sin(yaw) + temp_y * cos(yaw);
+  goal_pose_.orientation = tf::createQuaternionMsgFromYaw(temp_yaw + yaw);
+
+  // std::cout << "prime_start_pose[x, y, yaw] : [" << prime_start_pose_.position.x
+  //           << ", " << prime_start_pose_.position.y << ", "
+  //           << tf::getYaw(prime_start_pose_.orientation) << "]" << std::endl;
+
+  // std::cout << "prime_goal_pose[x, y, yaw] : [" << prime_goal_pose_.position.x
+  //           << ", " << prime_goal_pose_.position.y << ", "
+  //           << tf::getYaw(prime_goal_pose_.orientation) << "]" << std::endl;
+
+  // std::cout << "start_pose[x, y, yaw] : [" << start_pose_.position.x << ", "
+  //           << start_pose_.position.y << ", "
+  //           << tf::getYaw(start_pose_.orientation) << "]" << std::endl;
+
+  // std::cout << "goal_pose[x, y, yaw] : [" << goal_pose_.position.x << ", "
+  //           << goal_pose_.position.y << ", "
+  //           << tf::getYaw(goal_pose_.orientation) << "]" << std::endl;
+
+  goal_pose_id_ = CalculateID(goal_pose_.position.x, goal_pose_.position.y,
+                              tf::getYaw(goal_pose_.orientation));
+  start_pose_id_ = CalculateID(start_pose_.position.x, start_pose_.position.y,
+                               tf::getYaw(start_pose_.orientation));
+  double start_h =
+      CalculateDisTwoPoint(start_pose_.position, goal_pose_.position);
+  node_stg_[goal_pose_id_] = AstarNode(goal_pose_, DBL_MAX, 0.0);
+  node_stg_[start_pose_id_] = AstarNode(start_pose_, 0.0, start_h);
+
+  goal_info_ = &node_stg_[goal_pose_id_];
+  start_info_ = &node_stg_[start_pose_id_];
+  // std::cout << "goal yaw = " << goal_info_->yaw << std::endl;
+
+  // start point push openlist
+  openlist_.emplace(start_pose_id_, KeyValue(start_info_->h, 0.0));
+  start_info_->state = STATE::OPEN;
+}
+
+void HybridAstar::ConvertPathFrame() {
+  // convert final path
+  for (auto& elem : final_path_) {
+
+    elem = PoseTransform(prime_start_pose_, elem);
+  }
+
+  // convert prime path
+  for (auto& elem : prime_path_temp_) {
+    elem = PoseTransform(prime_start_pose_, elem);
+  }
 }

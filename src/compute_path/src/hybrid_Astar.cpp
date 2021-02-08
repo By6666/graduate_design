@@ -1,8 +1,9 @@
+#include "ros/ros.h"
+
 #include <iostream>
 
 #include "compute_path/execute.h"
 #include "matplotlibcpp.h"
-#include "ros/ros.h"
 
 int main(int argc, char** argv) {
   ros::init(argc, argv, "hybrid_A");
@@ -10,36 +11,32 @@ int main(int argc, char** argv) {
 
   ObsInfo obs_info;
   TruckInfo truck_info;
+  RouteInfo route_info;
   HybridAstar hybrid_astar;
 
-  // subscribe map topic, get grid map info
-  ros::Subscriber map_sub =
-      nh.subscribe("/map", 1, &ObsInfo::GridMapCall, &obs_info);
+  // // subscribe map topic, get grid map info
+  // ros::Subscriber map_sub =
+  //     nh.subscribe("/map", 1, &ObsInfo::GridMapCall, &obs_info);
 
-  // subscribe hollow topic, get hollow info
+  // subscribe hollow topic, get obstacles info
   ros::Subscriber hollow_sub = nh.subscribe(
-      "/hollow_create/hollow_info", 1, &ObsInfo::HollowInfoCall, &obs_info);
+      "/hollow_create/obstacles_info", 1, &ObsInfo::ObstaclesInfoCall, &obs_info);
 
   // subscribe bounder info
   ros::Subscriber bounder_sub = nh.subscribe(
-      "road_line/all_bounder", 1, &ObsInfo::BounderInfoCall, &obs_info);
+      "road_line/all_bounder", 1, &RouteInfo::BounderInfoCall, &route_info);
+
+  // subscribe road center line info
+  ros::Subscriber ref_line_sub = nh.subscribe(
+      "road_line/center_line", 1, &RouteInfo::CentreLineInfoCall, &route_info);
 
   // start prime sub
-  ros::Subscriber prime_start_sub =
-      nh.subscribe("road_line/prime_start_pose", 1,
-                   &TruckInfo::PrimeStartPoseCallback, &truck_info);
+  ros::Subscriber prime_start_sub = nh.subscribe(
+      "road_line/start_pose", 1, &TruckInfo::StartPoseCallback, &truck_info);
 
   // goal prime sub
-  ros::Subscriber prime_goal_sub =
-      nh.subscribe("road_line/prime_goal_pose", 1,
-                   &TruckInfo::PrimeGoalPoseCallback, &truck_info);
-
-  // subscribe start pose
-  ros::Subscriber start_sub = nh.subscribe(
-      "/initialpose", 1, &TruckInfo::StartInfoCallback, &truck_info);
-  // subscribe goal pose
-  ros::Subscriber goal_sub = nh.subscribe(
-      "/move_base_simple/goal", 1, &TruckInfo::GoalInfoCallback, &truck_info);
+  ros::Subscriber prime_goal_sub = nh.subscribe(
+      "road_line/goal_pose", 1, &TruckInfo::GoalPoseCallback, &truck_info);
 
   // pub truck show info
   ros::Publisher truck_show_pub =
@@ -56,6 +53,9 @@ int main(int argc, char** argv) {
 
   double time_sum = 0.0;
   int cnt = 0, test_times_cnt;
+  bool test_model_flg, curvature_show_flg;
+  nh.param<bool>("curvature_show_flg", curvature_show_flg, false);
+  nh.param<bool>("test_model_flg", test_model_flg, false);
   nh.param<int>("test_times", test_times_cnt, 20);
 
   while (ros::ok()) {
@@ -65,15 +65,17 @@ int main(int argc, char** argv) {
     // param update
     truck_info.UpgrateParam();
     hybrid_astar.UpgrateParam();
-    if (!(obs_info.get_obs_state() && truck_info.get_start_goal_state())) {
-      std::cout << obs_info.get_obs_state() << "  "
-                << truck_info.get_start_goal_state() << std::endl;
+    if (!(obs_info.get_obs_state() && truck_info.get_start_goal_state() &&
+          route_info.get_route_state())) {
+      std::cout << "[obs_st, truck_st, route_st]: [" << obs_info.get_obs_state()
+                << ", " << truck_info.get_start_goal_state() << ", "
+                << route_info.get_route_state() << "]" << std::endl;
       ros::Duration(0.01).sleep();
       continue;
     }
 
     // input start, goal, cost map , obs info and hollow info to hybrid_astar
-    ImportInfo(obs_info, truck_info, hybrid_astar);
+    ImportInfo(obs_info, truck_info, route_info, hybrid_astar);
 
     // hybrid Astar
     std::cout << "********** Hybrid Astar start !! **********" << std::endl;
@@ -87,7 +89,7 @@ int main(int argc, char** argv) {
       PublishFinalPath(hybrid_astar, path_pub);
     }
 
-    if (!test_times_cnt) hybrid_astar.PrintPath();
+    if (test_model_flg && !test_times_cnt) hybrid_astar.PrintPath();
     std::cout << "*********** Hybrid Astar End !! ***********" << std::endl
               << "path_score: " << hybrid_astar.get_path_evaluate_value()
               << "  average_curvature_diff: "
@@ -109,7 +111,7 @@ int main(int argc, char** argv) {
     truck_info.TruckShow(hybrid_astar.get_final_path(), truck_show_pub);
     hybrid_astar.UpdatePoseShow(update_show_pub);
 
-    if (!test_times_cnt) {
+    if (test_model_flg && !test_times_cnt) {
       while (ros::ok()) {
         truck_info.TruckShow(hybrid_astar.get_final_path(), truck_show_pub);
         ros::Duration(0.1).sleep();
@@ -127,10 +129,11 @@ int main(int argc, char** argv) {
 
     ros::Duration(0.1).sleep();
   }
-  ros::shutdown();
-  matplotlibcpp::plot(hybrid_astar.get_curvature_data());
-  matplotlibcpp::grid(true);
-  matplotlibcpp::show();
-
+  if (curvature_show_flg) {
+    ros::shutdown();
+    matplotlibcpp::plot(hybrid_astar.get_curvature_data());
+    matplotlibcpp::grid(true);
+    matplotlibcpp::show();
+  }
   return 0;
 }

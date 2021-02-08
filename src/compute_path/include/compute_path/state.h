@@ -5,8 +5,10 @@
 #include "jsk_recognition_msgs/BoundingBoxArray.h"
 #include "tf/tf.h"
 
-typedef uint64_t _Type_ID;
-typedef jsk_recognition_msgs::BoundingBoxArray _Type_Hollow;
+#include "hollow_create/Obstacles.h"
+
+typedef int64_t _Type_ID;
+typedef hollow_create::Obstacles _Type_Obs;
 
 enum STATE { NONE = 0, CLOSE = 1, OPEN = 2 };
 

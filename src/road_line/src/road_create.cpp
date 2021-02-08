@@ -18,6 +18,7 @@ RoadLine::RoadLine() {
   road_right_bounder_.header.frame_id = "global";
   road_back_bounder_.header.frame_id = "global";
   road_forward_bounder_.header.frame_id = "global";
+  road_center_line_.header.frame_id = "global";
 }
 
 /**
@@ -85,27 +86,36 @@ bool RoadLine::ReadRoadLine() {
   start_pose_.position.y = prime_road_[40 / simple_segment].y;
   start_pose_.orientation =
       tf::createQuaternionMsgFromYaw(prime_road_[40 / simple_segment].yaw);
+  // start_pose_.orientation = tf::createQuaternionMsgFromYaw(0.0);
 
   // set goal pose
-  goal_pose_.position.x =
-      prime_road_[prime_road_.size() - 180 / simple_segment].x;
-  goal_pose_.position.y =
-      prime_road_[prime_road_.size() - 180 / simple_segment].y;
-  goal_pose_.orientation = tf::createQuaternionMsgFromYaw(
-      prime_road_[prime_road_.size() - 180 / simple_segment].yaw);
-  // goal_pose_.position.x = prime_road_[540 / simple_segment].x;
-  // goal_pose_.position.y = prime_road_[540 / simple_segment].y;
-  // goal_pose_.orientation =
-  //     tf::createQuaternionMsgFromYaw(prime_road_[540 / simple_segment].yaw);
+  // goal_pose_.position.x =
+  //     prime_road_[prime_road_.size() - 180 / simple_segment].x;
+  // goal_pose_.position.y =
+  //     prime_road_[prime_road_.size() - 180 / simple_segment].y;
+  // goal_pose_.orientation = tf::createQuaternionMsgFromYaw(
+  //     prime_road_[prime_road_.size() - 180 / simple_segment].yaw);
+
+  goal_pose_.position.x = prime_road_[540 / simple_segment].x;
+  goal_pose_.position.y = prime_road_[540 / simple_segment].y;
+  goal_pose_.orientation =
+      tf::createQuaternionMsgFromYaw(prime_road_[540 / simple_segment].yaw);
+
+  // goal_pose_.orientation = tf::createQuaternionMsgFromYaw(0.0);
 
   return true;
 }
 
 void RoadLine::CreateRoadBounder() {
+
+  // refind minimal area when start and goal point changing
+
+
   road_left_bounder_.poses.clear();
   road_right_bounder_.poses.clear();
   road_back_bounder_.poses.clear();
   road_forward_bounder_.poses.clear();
+  road_center_line_.poses.clear();
   all_bounder_.poses.clear();
 
   geometry_msgs::PoseStamped temp;
@@ -119,6 +129,9 @@ void RoadLine::CreateRoadBounder() {
     temp.pose = PoseTransform(prime_road_[i], origin_bounder_.back());
     road_right_bounder_.poses.push_back(temp);
     all_bounder_.poses.push_back(temp);
+
+    temp.pose = PoseTransform(prime_road_[i], RoadXY(0.0, 0.0, 0.0));
+    road_center_line_.poses.push_back(temp);
   }
 
   for (auto& elem : origin_bounder_) {
@@ -140,4 +153,14 @@ void RoadLine::UpgrateParam() {
                            0.1);
   CreateOriginBounder();
   CreateRoadBounder();
-};
+}
+
+void RoadLine::StartInfoCallback(
+    const geometry_msgs::PoseWithCovarianceStampedConstPtr& start_initial) {
+  start_pose_ = start_initial->pose.pose;
+}
+
+void RoadLine::GoalInfoCallback(
+    const geometry_msgs::PoseStampedConstPtr& goal_initial) {
+  goal_pose_ = goal_initial->pose;
+}

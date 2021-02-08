@@ -12,23 +12,37 @@ int main(int argc, char** argv) {
       nh.advertise<nav_msgs::Path>("back_bounder", 1, true);
   ros::Publisher forward_bounder =
       nh.advertise<nav_msgs::Path>("forward_bounder", 1, true);
+  ros::Publisher center_line =
+      nh.advertise<nav_msgs::Path>("center_line", 1, true);
 
   ros::Publisher all_bounder =
       nh.advertise<nav_msgs::Path>("all_bounder", 1, true);
 
   ros::Publisher goal_pub =
-      nh.advertise<geometry_msgs::Pose>("prime_goal_pose", 1);
+      nh.advertise<geometry_msgs::Pose>("goal_pose", 1, true);
   ros::Publisher start_pub =
-      nh.advertise<geometry_msgs::Pose>("prime_start_pose", 1);
+      nh.advertise<geometry_msgs::Pose>("start_pose", 1, true);
 
   RoadLine road;
+
+  // subscribe start pose
+  ros::Subscriber start_sub = nh.subscribe(
+      "/initialpose", 1, &RoadLine::StartInfoCallback, &road);
+  // subscribe goal pose
+  ros::Subscriber goal_sub = nh.subscribe(
+      "/move_base_simple/goal", 1, &RoadLine::GoalInfoCallback, &road);
+
+
 
   while (!road.ReadRoadLine()) {
     ros::Duration(0.5).sleep();
   }
 
   while (ros::ok()) {
+    ros::spinOnce();
+    
     road.UpgrateParam();
+
     goal_pub.publish(road.get_goal_pose());
     start_pub.publish(road.get_start_pose());
 
@@ -36,6 +50,7 @@ int main(int argc, char** argv) {
     right_bounder.publish(road.get_right_bounder());
     back_bounder.publish(road.get_back_bounder());
     forward_bounder.publish(road.get_forward_bounder());
+    center_line.publish(road.get_center_line());
     all_bounder.publish(road.get_all_bounder());
 
     ros::Duration(0.2).sleep();

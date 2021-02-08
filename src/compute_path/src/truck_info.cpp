@@ -210,28 +210,15 @@ void TruckInfo::UpgrateParam() {
   dist_limit_ = (dist_limit_temp > 20) ? dist_limit_temp : 20;
 }
 
-void TruckInfo::StartInfoCallback(
-    const geometry_msgs::PoseWithCovarianceStampedConstPtr& start_initial) {
-  start_ok_ = false;
-  start_pose_.header = start_initial->header;
-  start_pose_.pose = start_initial->pose.pose;
-  start_ok_ = true;
-}
-
-void TruckInfo::GoalInfoCallback(
-    const geometry_msgs::PoseStampedConstPtr& goal_initial) {
-  goal_ok_ = false;
-  goal_pose_ = *goal_initial;
-  goal_ok_ = true;
-}
-
-void TruckInfo::PrimeGoalPoseCallback(
+void TruckInfo::GoalPoseCallback(
     const geometry_msgs::PoseConstPtr& goal_initial) {
+  goal_ok_ = false;
   goal_pose_.pose = *goal_initial;
   goal_ok_ = true;
 }
-void TruckInfo::PrimeStartPoseCallback(
+void TruckInfo::StartPoseCallback(
     const geometry_msgs::PoseConstPtr& start_initial) {
+  start_ok_ = false;
   start_pose_.pose = *start_initial;
   start_ok_ = true;
 }

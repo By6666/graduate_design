@@ -1,14 +1,15 @@
-#include <jsk_recognition_msgs/BoundingBoxArray.h>
 #include <ros/ros.h>
 #include <tf/tf.h>
 
 #include <iostream>
 
+#include "hollow_create/ObstacleObject.h"
+#include "hollow_create/Obstacles.h"
+
 int main(int argc, char** argv) {
   ros::init(argc, argv, "hollow_create");
   ros::NodeHandle nh("~");
-  ros::Publisher pub =
-      nh.advertise<jsk_recognition_msgs::BoundingBoxArray>("hollow_info", 1);
+  ros::Publisher pub = nh.advertise<hollow_create::Obstacles>("obstacles_info", 1);
 
   double size_x, size_y, place_x, place_y, yaw;
 
@@ -18,46 +19,49 @@ int main(int argc, char** argv) {
   nh.param<double>("place_y", place_y, 0.0);
   nh.param<double>("place_x", place_x, 12.0);
 
-  jsk_recognition_msgs::BoundingBoxArray boxes_array;
-  jsk_recognition_msgs::BoundingBox box_temp;
+  hollow_create::Obstacles obstacles;
+  hollow_create::ObstacleObject obstacle_object;
 
-  boxes_array.header.frame_id = "global";
-  boxes_array.header.stamp = ros::Time::now();
+  obstacles.header.frame_id = "global";
+  obstacles.header.stamp = ros::Time::now();
 
-  box_temp.header.frame_id = "global";
-  box_temp.header.stamp = ros::Time::now();
+  obstacle_object.header.frame_id = "global";
+  obstacle_object.header.stamp = ros::Time::now();
 
-  box_temp.label = 0;
-  box_temp.dimensions.x = size_x;
-  box_temp.dimensions.y = size_y;
-  box_temp.dimensions.z = 1.0;
+  obstacle_object.obs_box.x = size_x;
+  obstacle_object.obs_box.y = size_y;
+  obstacle_object.obs_box.z = 1.0;
 
-  box_temp.pose.position.x = place_x;
-  box_temp.pose.position.y = place_y;
-  box_temp.pose.position.z = 0.0;
+  obstacle_object.center.position.x = place_x;
+  obstacle_object.center.position.y = place_y;
+  obstacle_object.center.position.z = 0.0;
 
-  box_temp.pose.orientation = tf::createQuaternionMsgFromYaw(yaw);
+  obstacle_object.center.orientation = tf::createQuaternionMsgFromYaw(yaw);
 
-  boxes_array.boxes.push_back(box_temp);
+  obstacle_object.is_static = true;
+  obstacle_object.label = 0;
+
+
+  obstacles.obstacles.push_back(obstacle_object);
 
   while (ros::ok()) {
-    nh.param<double>("yaw", yaw, 0.0);
-    nh.param<double>("size_x", size_x, 10.0);
-    nh.param<double>("size_y", size_y, 10.0);
-    nh.param<double>("place_y", place_y, 0.0);
-    nh.param<double>("place_x", place_x, 12.0);
+    // nh.param<double>("yaw", yaw, 0.0);
+    // nh.param<double>("size_x", size_x, 10.0);
+    // nh.param<double>("size_y", size_y, 10.0);
+    // nh.param<double>("place_y", place_y, 0.0);
+    // nh.param<double>("place_x", place_x, 12.0);
 
-    boxes_array.boxes.back().dimensions.x = size_x;
-    boxes_array.boxes.back().dimensions.y = size_y;
+    // obstacles.boxes.back().dimensions.x = size_x;
+    // obstacles.boxes.back().dimensions.y = size_y;
 
-    boxes_array.boxes.back().pose.position.x = place_x;
-    boxes_array.boxes.back().pose.position.y = place_y;
+    // obstacles.boxes.back().pose.position.x = place_x;
+    // obstacles.boxes.back().pose.position.y = place_y;
 
-    boxes_array.boxes.back().pose.orientation =
-        tf::createQuaternionMsgFromYaw(yaw);
+    // obstacles.boxes.back().pose.orientation =
+    //     tf::createQuaternionMsgFromYaw(yaw);
 
-    pub.publish(boxes_array);
-    ros::Duration(0.1).sleep();
+    pub.publish(obstacles);
+    ros::Duration(0.5).sleep();
   }
 
   return 0;

@@ -45,31 +45,26 @@ class HybridAstar {
   std::vector<AstarNode> GetNeighbors(const AstarNode* const node);
 
   void UpgrateParam();
-  void CreateHollowList();
+  // void CreateHollowList();
   void CreateUpdateSet();
   void CreateUpdateSet(int num);
   void UpdatePoseShow(const ros::Publisher& pub);
   UPDATE_SET UpdateSetTransform(const geometry_msgs::Pose& pose);
   UPDATE_POS UpdateNodeTransform(const geometry_msgs::Pose& pose);
 
-  inline std::set<int>& set_obs_list() { return obs_list_; }
-  inline _Type_Hollow& set_hollow_list() { return hollow_info_; }
+  inline _Type_Obs& set_obstacles_info() { return obstacles_info; }
   inline double& set_map_resolution() { return map_resolution_; }
-  inline std::vector<int8_t>& set_map_data() { return map_data_; }
-  inline geometry_msgs::Pose& set_goal_pose() { return goal_pose_; }
-  inline geometry_msgs::Pose& set_start_pose() { return start_pose_; }
-  inline geometry_msgs::Point& set_map_origin() { return map_origin_; }
+  inline geometry_msgs::Pose& set_goal_pose() { return prime_goal_pose_; }
+  inline geometry_msgs::Pose& set_start_pose() { return prime_start_pose_; }
+  inline std::vector<geometry_msgs::Point>& set_ref_line() { return ref_line_; }
   inline double& set_truck_width() { return truck_width_; }
   inline double& set_truck_length() { return truck_length_; }
   inline double& set_truck_base2back() { return truck_base2back_; }
-  inline int& set_map_heigh() { return heigh_; }
-  inline int& set_map_width() { return width_; }
   inline KDTreeSP::pointVec& set_bounder_info() { return bounder_info_; }
 
   inline int get_angle_size() const { return angle_size_; }
   inline double get_move_step() const { return move_step_; }
   inline PATH_TYPE get_final_path() const { return final_path_; }
-  inline std::set<int> get_obs_list() const { return obs_list_; }
   inline PATH_TYPE get_prime_path() const { return prime_path_temp_; }
   inline UPDATE_POS get_update_set() const { return update_set_; }
   inline geometry_msgs::Pose get_goal_pose() const { return goal_pose_; }
@@ -89,7 +84,7 @@ class HybridAstar {
   }
 
   inline void PrintMapSize() const {
-    std::cout << "map_size: [" << width_ << "," << heigh_ << "]"
+    std::cout << "map_size: [" << map_width_ << "," << map_heigh_ << "]"
               << "  angle_size: " << angle_size_
               << "  extension_nums: " << extension_point_num_ << std::endl;
   }
@@ -110,8 +105,6 @@ class HybridAstar {
   bool path_optimize_flg_;
 
   /* for hybrid Astar */
-  int width_, heigh_;
-  double min_turning_radius_;
   int goal_pose_id_, start_pose_id_;
   double node2goal_r_, node2goal_yaw_;
 
@@ -122,7 +115,7 @@ class HybridAstar {
   bool use_goal_flg_;
   std::vector<double> update_points_orientation_stg_;
   double heur_dis_cof_, heur_yaw_cof_goal_, heur_yaw_cof_last_,
-      heur_curvature_cof_;
+      heur_curvature_cof_, reference_line_cof_;
   double path_curvature_value_, path_length_, max_curvature_diff_,
       curvature_average_diff_;  // 评估最终路径的得分
   std::vector<double> curvature_data_stg_;
@@ -133,22 +126,24 @@ class HybridAstar {
 
   /* pre container */
   UPDATE_POS update_set_;
-  std::set<int> obs_list_;
-  _Type_Hollow hollow_info_;
+  _Type_Obs obstacles_info;
   UPDATE_SET update_pass_set_;
   std::multiset<int> expend_pos_stg_;
-  std::vector<PointSet_type> hollow_list_;
   KDTreeSP::pointVec bounder_info_;
   KDTreeSP::KDTree kdtree_bounder_;
+  std::vector<geometry_msgs::Point> ref_line_;
 
   /* parameter for map */
   double map_resolution_;
-  std::vector<int8_t> map_data_;
+  int map_width_, map_heigh_;
   geometry_msgs::Point map_origin_;
   AstarNode *start_info_, *goal_info_, *find_goal_info_;
+
+  geometry_msgs::Pose prime_start_pose_, prime_goal_pose_;
   geometry_msgs::Pose start_pose_, goal_pose_;
 
   /* param for truck */
+  double min_turning_radius_;
   double truck_length_, truck_width_, truck_base2back_;
 
   // ros::NodeHandle path_op_;
@@ -158,15 +153,6 @@ class HybridAstar {
   double detect_collision_rate_;  // [0,1]
   double detect_collision_point_seg_;
 
-  inline void CreateKDTreeBounderInfo() {
-    ros::WallTime start = ros::WallTime::now();
-    kdtree_bounder_ = KDTreeSP::KDTree(bounder_info_);
-    ros::WallTime end = ros::WallTime::now();
-
-    std::cout << "KDTree create *** size:" << bounder_info_.size()
-              << "  time:" << (end - start).toSec() * 1000 << " ms"
-              << std::endl;
-  }
   bool NearestInTruckFrame(const PointSet_type& truck_frame,
                            const KDTreeSP::point_t& truck_central,
                            const KDTreeSP::point_t& nearest);
@@ -186,6 +172,11 @@ class HybridAstar {
                                         const geometry_msgs::Pose& pose);
   AstarNode PoseTransform(const AstarNode* const central,
                           const geometry_msgs::Pose& pose);
+
+  // mainly step
+  void CreateKDTreeBounderInfo();
+  void CalculateStartAndGoalPoint();
+  void ConvertPathFrame();
 
   //** 2020.03.19 modify
   // calculate total id (3 dim)
@@ -210,12 +201,12 @@ class HybridAstar {
                   static_cast<_Type_ID>(x / map_resolution_));
   }
 
-  inline int calculateXYIndexMap(double x, double y) {
-    int raw = static_cast<int>((y - map_origin_.y) / map_resolution_);
-    int col = static_cast<int>((x - map_origin_.x) / map_resolution_);
+  // inline int calculateXYIndexMap(double x, double y) {
+  //   int raw = static_cast<int>((y - map_origin_.y) / map_resolution_);
+  //   int col = static_cast<int>((x - map_origin_.x) / map_resolution_);
 
-    return raw * width_ + col;
-  }
+  //   return raw * map_width_ + col;
+  // }
 
   //** 2020.03.04 modify
   //** 返回[-pi,pi）
@@ -245,7 +236,7 @@ class HybridAstar {
   // }
   //** 2020.03.19 modify
   inline _Type_ID Code2D(_Type_ID raw, _Type_ID col) {
-    return raw * width_ + col;
+    return raw * map_width_ + col;
   }
   inline _Type_ID Code3D(_Type_ID raw, _Type_ID col) {
     return raw * angle_size_ + col;
@@ -284,19 +275,22 @@ class HybridAstar {
     //** 添加曲率约束cost
     double dis_curvature = 0.0;
     if (np->best_p != NULL) {
-      dis_curvature = fabs(TranformYawRange(node.yaw - np->yaw) -
-                           TranformYawRange(np->yaw - np->best_p->yaw));
+      dis_curvature = fabs((node.yaw - np->yaw) - (np->yaw - np->best_p->yaw));
     }
     double heur_curvature_cof =
         pow(heur_curvature_cof_, JudgeOrientation(dis_curvature));
+
+    //** 2021.02.02 add
+    //** 添加中心线约束
+    double away_reference_cost = CalculateDisToRefLine(node);
 
     return heur_dis_cof_ * CalculateDisTwoPoint(node.x, node.y,
                                                 goal_pose_.position.x,
                                                 goal_pose_.position.y) +
            heur_yaw_cof_goal_ * dis_yaw_to_goal +
            heur_yaw_cof_last * dis_yaw_to_last +
-           heur_curvature_cof * dis_curvature;
-    //  map_data_[calculateXYIndexMap(node.x, node.y)];
+           heur_curvature_cof * dis_curvature +
+           reference_line_cof_ * away_reference_cost;
   }
 
   // calculate key
@@ -320,14 +314,14 @@ class HybridAstar {
   }
 
   // is obstacle
-  inline bool IsObstacle(int xy_index) {
-    return obs_list_.find(xy_index) != obs_list_.end();
-  }
-  inline bool IsInMap(double x, double y) {
-    return x >= map_origin_.x && y >= map_origin_.y &&
-           (x - map_origin_.x) <= static_cast<double>(width_) &&
-           (y - map_origin_.y) <= static_cast<double>(heigh_);
-  }
+  // inline bool IsObstacle(int xy_index) {
+  //   return obs_list_.find(xy_index) != obs_list_.end();
+  // }
+  // inline bool IsInMap(double x, double y) {
+  //   return x >= map_origin_.x && y >= map_origin_.y &&
+  //          (x - map_origin_.x) <= static_cast<double>(map_width_) &&
+  //          (y - map_origin_.y) <= static_cast<double>(map_heigh_);
+  // }
 
   // transform yaw in range [-pi, pi]
   inline double TranformYawRange(double yaw) {
@@ -376,6 +370,50 @@ class HybridAstar {
       result.push_back(elem->yaw);
     }
     return result;
+  }
+
+  // calculate the lastest distance to reference line
+  double CalculateDisToRefLine(const AstarNode& node) {
+    if (ref_line_.size() < 2) {
+      // When sizes of points on reference line less 2, we will don't care this item.
+      // So return 0.0
+      return 0.0;
+    }
+
+    double nearest_dis = __DBL_MAX__;
+
+    for (int i = 0; i + 1 < ref_line_.size(); ++i) {
+      double temp_dis = CalculateDisToLine(ref_line_[i], ref_line_[i + 1], node);
+      nearest_dis = std::min(nearest_dis, temp_dis);
+    }
+
+    return nearest_dis;
+  }
+
+  double CalculateDisToLine(const geometry_msgs::Point& start, const geometry_msgs::Point& end,
+                            const AstarNode& point) {
+    const double length = std::hypot(start.x - end.x, start.y - end.y);
+
+    if (length < 1e-3) {
+      return std::hypot(point.x - start.x, point.y - start.y);
+    }
+
+    const double unit_x = (end.x - start.x) / length;
+    const double unit_y = (end.y - start.y) / length;
+
+    const double x0 = point.x - start.x;
+    const double y0 = point.y - start.y;
+
+    const double proj = x0 * unit_x + y0 * unit_y;
+    if (proj < 0.0) {
+      return std::hypot(x0, y0);
+    }
+
+    if (proj > length) {
+      return std::hypot(point.x - end.x, point.y - end.y);
+    }
+
+    return std::fabs(x0 * unit_y - y0 * unit_x);
   }
 };
 

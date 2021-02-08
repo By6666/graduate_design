@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 
+#include "geometry_msgs/PoseStamped.h"
+#include "geometry_msgs/PoseWithCovarianceStamped.h"
 #include "geometry_msgs/Pose.h"
 #include "nav_msgs/Path.h"
 #include "ros/ros.h"
@@ -13,6 +15,10 @@
 class RoadLine {
  public:
   RoadLine();
+
+  void StartInfoCallback(
+      const geometry_msgs::PoseWithCovarianceStampedConstPtr& start_initial);
+  void GoalInfoCallback(const geometry_msgs::PoseStampedConstPtr& goal_initial);
 
   bool ReadRoadLine();
   void CreateRoadBounder();
@@ -30,6 +36,8 @@ class RoadLine {
   inline const nav_msgs::Path& get_forward_bounder() const {
     return road_forward_bounder_;
   }
+  inline const nav_msgs::Path& get_center_line() const { return road_center_line_; }
+  
   inline const nav_msgs::Path& get_all_bounder() const { return all_bounder_; }
 
   inline const geometry_msgs::Pose& get_goal_pose() const { return goal_pose_; }
@@ -56,9 +64,11 @@ class RoadLine {
   nav_msgs::Path all_bounder_;
   nav_msgs::Path road_left_bounder_, road_right_bounder_;
   nav_msgs::Path road_back_bounder_, road_forward_bounder_;
+  nav_msgs::Path road_center_line_;
 
   void CreateOriginBounder();
   geometry_msgs::Pose PoseTransform(const RoadXY& central, const RoadXY& pose);
+
 };
 
 inline double DegreeToRad(const double& deg) { return deg * M_PI / 180.0; }

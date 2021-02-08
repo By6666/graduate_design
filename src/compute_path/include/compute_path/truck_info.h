@@ -5,8 +5,8 @@
 #include <vector>
 
 #include "geometry_msgs/Point.h"
-#include "geometry_msgs/PoseStamped.h"
-#include "geometry_msgs/PoseWithCovarianceStamped.h"
+// #include "geometry_msgs/PoseStamped.h"
+// #include "geometry_msgs/PoseWithCovarianceStamped.h"
 #include "ros/ros.h"
 #include "tf/tf.h"
 #include "visualization_msgs/Marker.h"
@@ -20,16 +20,12 @@ class TruckInfo {
   void TruckShow(const std::vector<geometry_msgs::Pose>& path,
                  const ros::Publisher& pub);
 
-  void PrimeGoalPoseCallback(const geometry_msgs::PoseConstPtr& goal_initial);
-  void PrimeStartPoseCallback(const geometry_msgs::PoseConstPtr& start_initial);
-
-  void StartInfoCallback(
-      const geometry_msgs::PoseWithCovarianceStampedConstPtr& start_initial);
-  void GoalInfoCallback(const geometry_msgs::PoseStampedConstPtr& goal_initial);
+  void GoalPoseCallback(const geometry_msgs::PoseConstPtr& goal_initial);
+  void StartPoseCallback(const geometry_msgs::PoseConstPtr& start_initial);
 
   inline bool get_start_goal_state() const { return start_ok_ && goal_ok_; }
-  inline geometry_msgs::Pose get_goal_pose() const { return goal_pose_.pose; }
-  inline geometry_msgs::Pose get_start_pose() const { return start_pose_.pose; }
+  inline const geometry_msgs::Pose& get_goal_pose() const { return goal_pose_.pose; }
+  inline const geometry_msgs::Pose& get_start_pose() const { return start_pose_.pose; }
 
   inline double get_truck_width() const { return truck_width_; }
   inline double get_truck_length() const { return truck_length_; }
