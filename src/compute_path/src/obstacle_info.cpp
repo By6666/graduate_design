@@ -8,6 +8,8 @@ ObsInfo::ObsInfo() : obstacles_ok_(false) {
 }
 
 void ObsInfo::ObstaclesInfoCall(const hollow_create::ObstaclesConstPtr& msg) {
-  obstacles_info = *msg;
-  obstacles_ok_ = true;
+  if (!obstacles_ok_) {
+    obstacles_info = *msg;
+    obstacles_ok_ = true;
+  }
 }

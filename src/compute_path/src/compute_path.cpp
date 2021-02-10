@@ -459,13 +459,14 @@ void HybridAstar::Init() {
   prime_path_temp_.clear();
   prime_path_optimize_.clear();
 
-  // CreateHollowList();
-
   // calculate start and goal
   CalculateStartAndGoalPoint();
 
   // KDTree create for road bounder & obslist
   CreateKDTreeBounderInfo();
+
+  // create obstacles list
+  CreateObstaclesList();
 }
 
 // get neighbors
@@ -480,8 +481,8 @@ std::vector<AstarNode> HybridAstar::GetNeighbors(const AstarNode* const node) {
     //   continue;
     // }
 
-    //** 2020.04.01 修改碰撞检测算法,判断最近点与矿卡原点的距离
-    if (DetectCollision(node, elem)) {
+    //** collision check, boundary and obstacles
+    if (BoundaryCollision(node, elem) || ObstalcesCollision(node, elem)) {
       continue;
     } else {
       AstarNode temp_node = PoseTransform(node, elem.back());
@@ -718,115 +719,6 @@ void HybridAstar::PrintPath() {
   // std::cout << "]" << std::endl;
 }
 
-// /* collision checking new
-//  */
-// bool HybridAstar::detectCollision(const AstarNode& node) {
-//   Collision collision_checker;
-
-//   PointSet_type truck_frame = GetTruckFrame(node);
-//   collision_checker.obj_1_ = truck_frame;
-
-//   for (auto& elem : hollow_list_) {
-//     collision_checker.obj_2_ = elem;
-//     if (collision_checker.IsCollision(true)) return true;
-//   }
-//   return false;
-// }
-
-// 检测碰撞 old by xc
-// 做法:将truck投影的平面上,然后检测每一个点是否是障碍物
-// bool HybridAstar::detectCollision(const AstarNode& node) {
-//   // define the truck as rectangle
-//   double left = -1.0 * truck_base2back_;
-//   double right = truck_length_ - truck_base2back_;
-//   double top = truck_width_ / 2;
-//   double bottom = -1.0 * truck_width_ / 2;
-//   double resolution = 1.0;
-
-//   // std::cout << "truck_width_:" << truck_width_ << std::endl;
-
-//   // Coordinate of base_link in ogm frame
-//   double one_angle_range = 2.0 * M_PI / angle_size_;
-//   double base_x = node.x;
-//   double base_y = node.y;
-//   double base_theta = node.yaw;
-//   // std::cout<< "base_theta: " << base_theta << std::endl;
-
-//   // Calculate cos and sin in advance
-//   double cos_theta = std::cos(base_theta);
-//   double sin_theta = std::sin(base_theta);
-
-//   // Convert each point to index and check if the node is Obstacle
-//   for (double x = left; x < right; x += resolution) {
-//     for (double y = top + 1.0; y >= bottom; y -= resolution) {
-//       // 2D coordinate rotate
-//       double index_x = (x * cos_theta - y * sin_theta + base_x) / resolution;
-//       double index_y = (x * sin_theta + y * cos_theta + base_y) / resolution;
-
-//       if (!IsInMap(index_x, index_y)) {
-//         return true;
-//       }
-//       if (IsObstacle(calculateXYIndexMap(index_x, index_y))) {
-//         return true;
-//       }
-//     }
-//   }
-//   return false;
-// }
-
-bool HybridAstar::DetectCollision(const AstarNode* const node_p,
-                                  const PATH_TYPE& update_set) {
-  for (int i = update_set.size() - 1; i >= 0;
-       i -= detect_collision_point_seg_) {
-    AstarNode truck_update_pos = PoseTransform(node_p, update_set[i]);
-    PointSet_type truck_frame = GetTruckFrame(truck_update_pos);
-
-    if (SinglePointDetect(truck_update_pos, truck_frame)) return true;
-  }
-  return false;
-}
-
-bool HybridAstar::SinglePointDetect(const AstarNode& truck_update_pos,
-                                    const PointSet_type& truck_frame) {
-  double cos_theta = std::cos(truck_update_pos.yaw);
-  double sin_theta = std::sin(truck_update_pos.yaw);
-  double x = truck_length_ / 2.0 - truck_base2back_;
-  double y = 0.0;
-  double truck_central_x = x * cos_theta - y * sin_theta + truck_update_pos.x;
-  double truck_central_y = x * sin_theta + y * cos_theta + truck_update_pos.y;
-
-  KDTreeSP::point_t truck_central{truck_central_x, truck_central_y};
-
-  KDTreeSP::point_t nearest = kdtree_bounder_.nearest_point(truck_central);
-
-  return NearestInTruckFrame(truck_frame, truck_central, nearest);
-}
-
-bool HybridAstar::NearestInTruckFrame(const PointSet_type& truck_frame,
-                                      const KDTreeSP::point_t& truck_central,
-                                      const KDTreeSP::point_t& nearest) {
-  const static double dis_1 = std::pow(truck_width_ / 2.0, 2.0);  // 内
-  const static double dis_2 = std::pow(truck_length_ / 2.0, 2.0) + dis_1;  // 外
-
-  double curr_dis = KDTreeSP::dist2(truck_central, nearest);
-
-  if (curr_dis > dis_2) return false;
-  if (curr_dis < dis_1) return true;
-
-  //**射线法判断点与多边形的关系
-  bool flag = false;
-  for (int i = 0, j = truck_frame.size() - 1; i < truck_frame.size(); j = i++) {
-    if (((truck_frame[i].y > nearest.back()) !=
-         (truck_frame[j].y > nearest.back())) &&
-        (nearest.front() < (truck_frame[j].x - truck_frame[i].x) *
-                                   (nearest.back() - truck_frame[i].y) /
-                                   (truck_frame[j].y - truck_frame[i].y) +
-                               truck_frame[i].x))
-      flag = !flag;
-  }
-  return flag;
-}
-
 void HybridAstar::CreateKDTreeBounderInfo() {
   ros::WallTime start = ros::WallTime::now();
 
@@ -916,7 +808,6 @@ void HybridAstar::CalculateStartAndGoalPoint() {
 void HybridAstar::ConvertPathFrame() {
   // convert final path
   for (auto& elem : final_path_) {
-
     elem = PoseTransform(prime_start_pose_, elem);
   }
 

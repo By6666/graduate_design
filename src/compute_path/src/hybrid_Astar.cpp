@@ -19,8 +19,9 @@ int main(int argc, char** argv) {
   //     nh.subscribe("/map", 1, &ObsInfo::GridMapCall, &obs_info);
 
   // subscribe hollow topic, get obstacles info
-  ros::Subscriber hollow_sub = nh.subscribe(
-      "/hollow_create/obstacles_info", 1, &ObsInfo::ObstaclesInfoCall, &obs_info);
+  ros::Subscriber obs_sub =
+      nh.subscribe("/obstacles_create/obstacles_info", 1,
+                   &ObsInfo::ObstaclesInfoCall, &obs_info);
 
   // subscribe bounder info
   ros::Subscriber bounder_sub = nh.subscribe(

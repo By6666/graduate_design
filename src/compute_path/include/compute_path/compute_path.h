@@ -38,21 +38,35 @@ class HybridAstar {
   bool FinalPath();
   bool ComputePath();
   bool detectCollision(const AstarNode& node);
-  //**  新的碰撞检测, 基于去除costmap的搜索方法
-  bool DetectCollision(const AstarNode* const node_p,
-                       const PATH_TYPE& update_set);
+
+  // boundary collision check
+  bool BoundaryCollision(const AstarNode* const node_p,
+                         const PATH_TYPE& update_set);
+
+  bool NearestInTruckFrame(const PointSet_type& truck_frame,
+                           const KDTreeSP::point_t& truck_central,
+                           const KDTreeSP::point_t& nearest);
+
+  bool SinglePointDetect(const AstarNode& truck_update_pos,
+                         const PointSet_type& truck_frame);
+
+  // obstacles collision check
+  bool ObstalcesCollision(const AstarNode* const node_p,
+                          const PATH_TYPE& update_set);
+  void CreateObstaclesList();
+  
+
   bool PushNode(const AstarNode& node, AstarNode* const p);
   std::vector<AstarNode> GetNeighbors(const AstarNode* const node);
 
   void UpgrateParam();
-  // void CreateHollowList();
   void CreateUpdateSet();
   void CreateUpdateSet(int num);
   void UpdatePoseShow(const ros::Publisher& pub);
   UPDATE_SET UpdateSetTransform(const geometry_msgs::Pose& pose);
   UPDATE_POS UpdateNodeTransform(const geometry_msgs::Pose& pose);
 
-  inline _Type_Obs& set_obstacles_info() { return obstacles_info; }
+  inline _Type_Obs& set_obstacles_info() { return obstacles_info_; }
   inline double& set_map_resolution() { return map_resolution_; }
   inline geometry_msgs::Pose& set_goal_pose() { return prime_goal_pose_; }
   inline geometry_msgs::Pose& set_start_pose() { return prime_start_pose_; }
@@ -126,7 +140,8 @@ class HybridAstar {
 
   /* pre container */
   UPDATE_POS update_set_;
-  _Type_Obs obstacles_info;
+  _Type_Obs obstacles_info_;
+  std::vector<PointSet_type> obstacles_list_;
   UPDATE_SET update_pass_set_;
   std::multiset<int> expend_pos_stg_;
   KDTreeSP::pointVec bounder_info_;
@@ -153,16 +168,12 @@ class HybridAstar {
   double detect_collision_rate_;  // [0,1]
   double detect_collision_point_seg_;
 
-  bool NearestInTruckFrame(const PointSet_type& truck_frame,
-                           const KDTreeSP::point_t& truck_central,
-                           const KDTreeSP::point_t& nearest);
-
-  bool SinglePointDetect(const AstarNode& truck_update_pos,
-                         const PointSet_type& truck_frame);
-
   // get hollow frame
-  PointSet_type GetHollowFrame(const geometry_msgs::Pose& central,
-                               const geometry_msgs::Vector3& size) const;
+  PointSet_type GetObstacleFrame(const geometry_msgs::Pose& central,
+                                 const geometry_msgs::Vector3& size) const;
+
+  PointSet_type GetObstacleFrame(const geometry_msgs::Point& central,
+                                 const geometry_msgs::Vector3& size) const;
   // get truck frame
   PointSet_type GetTruckFrame(const AstarNode& central) const;
 

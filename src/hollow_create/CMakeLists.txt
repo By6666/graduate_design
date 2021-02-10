@@ -8,6 +8,7 @@ add_compile_options(-std=c++11)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
+  rospy
   roscpp
   std_msgs
   geometry_msgs
@@ -108,7 +109,7 @@ generate_messages(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES hollow_create
- CATKIN_DEPENDS roscpp geometry_msgs std_msgs message_runtime
+ CATKIN_DEPENDS rospy roscpp geometry_msgs std_msgs message_runtime jsk_recognition_msgs
 #  DEPENDS system_lib
 )
 
@@ -119,7 +120,7 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-# include
+  include
   ${catkin_INCLUDE_DIRS}
 )
 

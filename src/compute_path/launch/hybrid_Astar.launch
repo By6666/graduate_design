@@ -34,9 +34,14 @@
 
     <!-- hollow create node launch -->
     <include file="$(find hollow_create)/launch/hollow_create.launch">
-    <arg name="yaw" default="0.0" /><arg name="size_x" default="10.0" />
-    <arg name="size_y" default="5.0" /><arg name="place_x" default="12.0" />
-    <arg name="place_y" default="0.0" /></include>
+        <arg name="yaw" value="0.0" />
+        <arg name="size_x" value="10.0" />
+        <arg name="size_y" value="5.0" />
+        <arg name="place_x" value="12.0" />
+        <arg name="place_y" value="0.0" />
+
+        <arg name="obstacle_file_path" value="$(find hollow_create)/obstacles.json" />
+    </include>
     
     <!-- compute_pth set param -->
     <arg name="truck_vel" default="2.0" />
