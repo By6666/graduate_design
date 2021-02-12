@@ -103,7 +103,7 @@ generate_messages(
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
+ INCLUDE_DIRS include
 #  LIBRARIES optimize_path
  CATKIN_DEPENDS roscpp rospy std_msgs message_runtime
 #  DEPENDS system_lib
@@ -116,14 +116,19 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-  # include
+  include
   ${catkin_INCLUDE_DIRS}
 )
 
+find_package(osqp REQUIRED)
+find_package(glog REQUIRED)
+
 ## Declare a C++ library
-# add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/optimize_path.cpp
-# )
+aux_source_directory(${PROJECT_SOURCE_DIR}/include/piecewise_jerk SRC_LIST_piecewise_jerk)
+
+add_library(piecewise_jerk STATIC ${SRC_LIST_piecewise_jerk})
+target_link_libraries(piecewise_jerk PUBLIC osqp::osqp glog)
+
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries

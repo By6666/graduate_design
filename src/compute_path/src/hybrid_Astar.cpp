@@ -31,6 +31,16 @@ int main(int argc, char** argv) {
   ros::Subscriber ref_line_sub = nh.subscribe(
       "road_line/center_line", 1, &RouteInfo::CentreLineInfoCall, &route_info);
 
+  // subscribe road left line info
+  ros::Subscriber left_line_sub =
+      nh.subscribe("road_line/left_bounder", 1,
+                   &RouteInfo::LeftBounderLineInfoCall, &route_info);
+
+  // subscribe road right line info
+  ros::Subscriber right_line_sub =
+      nh.subscribe("road_line/right_bounder", 1,
+                   &RouteInfo::RightBounderLineInfoCall, &route_info);
+
   // start prime sub
   ros::Subscriber prime_start_sub = nh.subscribe(
       "road_line/start_pose", 1, &TruckInfo::StartPoseCallback, &truck_info);
@@ -109,12 +119,16 @@ int main(int argc, char** argv) {
               << std::endl;
 
     // show in rviz
-    truck_info.TruckShow(hybrid_astar.get_final_path(), truck_show_pub);
+    truck_info.TruckShow(hybrid_astar.get_final_path(),
+                         hybrid_astar.get_optimize_final_path(),
+                         truck_show_pub);
     hybrid_astar.UpdatePoseShow(update_show_pub);
 
     if (test_model_flg && !test_times_cnt) {
       while (ros::ok()) {
-        truck_info.TruckShow(hybrid_astar.get_final_path(), truck_show_pub);
+        truck_info.TruckShow(hybrid_astar.get_final_path(),
+                             hybrid_astar.get_optimize_final_path(),
+                             truck_show_pub);
         ros::Duration(0.1).sleep();
         hybrid_astar.UpdatePoseShow(update_show_pub);
         ros::Duration(0.1).sleep();
@@ -128,7 +142,7 @@ int main(int argc, char** argv) {
       break;
     }
 
-    ros::Duration(0.1).sleep();
+    ros::Duration(0.5).sleep();
   }
   if (curvature_show_flg) {
     ros::shutdown();

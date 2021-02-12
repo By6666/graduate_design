@@ -18,14 +18,19 @@ class TruckInfo {
 
   void UpgrateParam();
   void TruckShow(const std::vector<geometry_msgs::Pose>& path,
+                 const std::vector<geometry_msgs::Pose>& optimize_path,
                  const ros::Publisher& pub);
 
   void GoalPoseCallback(const geometry_msgs::PoseConstPtr& goal_initial);
   void StartPoseCallback(const geometry_msgs::PoseConstPtr& start_initial);
 
   inline bool get_start_goal_state() const { return start_ok_ && goal_ok_; }
-  inline const geometry_msgs::Pose& get_goal_pose() const { return goal_pose_.pose; }
-  inline const geometry_msgs::Pose& get_start_pose() const { return start_pose_.pose; }
+  inline const geometry_msgs::Pose& get_goal_pose() const {
+    return goal_pose_.pose;
+  }
+  inline const geometry_msgs::Pose& get_start_pose() const {
+    return start_pose_.pose;
+  }
 
   inline double get_truck_width() const { return truck_width_; }
   inline double get_truck_length() const { return truck_length_; }

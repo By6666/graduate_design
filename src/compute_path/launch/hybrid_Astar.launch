@@ -5,16 +5,19 @@
     <!-- 参数调整 -->
     <!-- 曲率显示 --> <param name="curvature_show_flg" type="bool" value="false" />  
     <!-- 测试模式 --> <param name="test_model_flg" type="bool" value="false" />  
-    <!-- 测试次数 --><param name="test_times" type="int" value="5" />
+    <!-- 测试次数 --><param name="test_times" type="int" value="1" />
     <!-- 测试地图编号<arg name="file_num" value="5" /> -->
-    <!-- 扩展分支数目 --><arg name="extension_point_num" default="5" />
+    <!-- 扩展分支数目 --><arg name="extension_point_num" value="5" />
 
     <!-- 启发式weight --> 
-    <arg name="heur_dis_cof" default="2.0" />
-    <arg name="heur_curvature_cof" default="100.0" />
-    <arg name="heur_yaw_cof_last" default="50.0" />  
-    <arg name="heur_yaw_cof_goal" default="2.0" />
-    <arg name="heur_reference_line_cof" default="20.0" />
+    <arg name="heur_dis_cof" value="2.0" />
+    <arg name="heur_curvature_cof" value="100.0" />
+    <arg name="heur_yaw_cof_last" value="50.0" />  
+    <arg name="heur_yaw_cof_goal" value="2.0" />
+    <arg name="heur_reference_line_cof" value="20.0" />
+
+    <!-- final path convert -->
+    <arg name="final_path_convert_flg" value="true" />
 
 
     <!-- discrete map param -->
@@ -81,6 +84,8 @@
     <arg name="path_resolution" default="144" />
     <arg name="path_optimize_flg" default="false" />
 
+    <arg name="optimize_segment_dis" default="0.2" />
+
     <node name="hybrid_A" pkg="compute_path" type="hybrid_A" output="screen">
         <param name="TruckInfo/truck_vel" type="double" value="$(arg truck_vel)" />
         <param name="TruckInfo/truck_width" type="double" value="$(arg truck_width)" />
@@ -113,6 +118,10 @@
         <param name="compute_path/heur_curvature_cof" type="double" value="$(arg heur_curvature_cof)" />
         <param name="compute_path/heur_reference_line_cof" type="double" value="$(arg heur_reference_line_cof)" />
         <param name="compute_path/detect_collision_rate" type="double" value="$(arg detect_collision_rate)" />
+
+        <param name="compute_path/optimize_segment_dis" type="double" value="$(arg optimize_segment_dis)" />
+        <param name="compute_path/final_path_convert_flg" type="bool" value="$(arg final_path_convert_flg)" />
+
         <!-- discrete map param -->
         <param name="compute_path/map_width" type="int" value="$(arg map_width)" />
         <param name="compute_path/map_heigh" type="int" value="$(arg map_heigh)" />

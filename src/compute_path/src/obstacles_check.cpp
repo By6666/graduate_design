@@ -24,20 +24,31 @@ void HybridAstar::CreateObstaclesList() {
 
     obstacles_list_.push_back(GetObstacleFrame(temp_center, elem.obs_box));
   }
+
+  std::cout << "********* obstacles [x0, y0, x1, y1, ...]" << std::endl;
+  for(const auto& elem : obstacles_list_){
+    std::cout << "[" << elem[0].x << ", " << elem[0].y << ", " << elem[1].x
+              << ", " << elem[1].y << ", " << elem[2].x << ", " << elem[2].y
+              << ", " << elem[3].x << ", " << elem[3].y << "]" << std::endl;
+  }
 }
 
 bool HybridAstar::ObstalcesCollision(const AstarNode* const node_p,
                                      const PATH_TYPE& update_set) {
   Collision collision_checker;
 
-  collision_checker.obj_1_ = GetTruckFrame(*node_p);
+  for (int i = update_set.size() - 1; i >= 0;
+       i -= detect_collision_point_seg_) {
+    AstarNode truck_update_pos = PoseTransform(node_p, update_set[i]);
+    collision_checker.obj_1_ = GetTruckFrame(truck_update_pos);
 
-  for (const auto& elem : obstacles_list_) {
-    collision_checker.obj_2_ = elem;
+    for (const auto& elem : obstacles_list_) {
+      collision_checker.obj_2_ = elem;
 
-    if (collision_checker.IsCollision()) {
-      // std::cout << "*************collision********" << std::endl;
-      return true;
+      if (collision_checker.IsCollision()) {
+        // std::cout << "*************collision********" << std::endl;
+        return true;
+      }
     }
   }
 

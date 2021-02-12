@@ -12,6 +12,9 @@ HybridAstar::HybridAstar() {
   private_nh.param<int>("path_resolution", path_resolution_, 20);
   private_nh.param<bool>("path_optimize_flg", path_optimize_flg_, false);
 
+  private_nh.param<double>("optimize_segment_dis", optimize_segment_dis_, 0.2);
+  private_nh.param<bool>("final_path_convert_flg", final_path_convert_flg_, true);
+
   //** 2020.03.04 modify
   private_nh.param<bool>("use_goal_flg", use_goal_flg_, false);
   private_nh.param<double>("move_step", move_step_, 2.4);
@@ -368,6 +371,9 @@ void HybridAstar::UpgrateParam() {
   private_nh.param<int>("path_resolution", path_resolution_, 20);
   private_nh.param<bool>("path_optimize_flg", path_optimize_flg_, false);
 
+  private_nh.param<double>("optimize_segment_dis", optimize_segment_dis_, 0.2);
+  private_nh.param<bool>("final_path_convert_flg", final_path_convert_flg_, true);
+
   //** 2020.03.04 modify
   private_nh.param<int>("angle_size", angle_size_, 96);
   private_nh.param<bool>("use_goal_flg", use_goal_flg_, false);
@@ -474,13 +480,6 @@ std::vector<AstarNode> HybridAstar::GetNeighbors(const AstarNode* const node) {
   std::vector<AstarNode> neighbors;
   int iter = 0;
   for (auto& elem : update_pass_set_) {
-    // AstarNode temp_node = PoseTransform(node, elem.back());
-    // if (!IsInMap(temp_node.x, temp_node.y) ||
-    //     // IsObstacle(CalculateXYIndex(temp_node.x, temp_node.y)))
-    //     detectCollision(temp_node)) {
-    //   continue;
-    // }
-
     //** collision check, boundary and obstacles
     if (BoundaryCollision(node, elem) || ObstalcesCollision(node, elem)) {
       continue;
@@ -603,6 +602,14 @@ bool HybridAstar::FinalPath() {
         final_path_.emplace_back(PoseTransformPath(prime_path_[i], elem));
       }
     }
+
+    // make decision
+    PathDecisionProcess();
+
+
+    // add path optimizer
+    bool opt_flg = OptimizerProcess();
+
     return true;
   } else {
     optimize_path::PathFitInfo cli;
@@ -669,8 +676,10 @@ bool HybridAstar::ExecuteHybridAstar() {
   bool path_flg = FinalPath();
 
   // path frame convert
-  ConvertPathFrame();
-  
+  if (final_path_convert_flg_) {
+    ConvertPathFrame();
+  }
+
   if (!flag) {
     HintShow("Path Optimize Failed !!");
     return false;
@@ -699,120 +708,29 @@ void HybridAstar::PrintPath() {
               << tf::getYaw(elem.orientation) << std::endl;
   }
 
-  // std::cout << "*************curvature*************" << std::endl;
-  // // std::cout << "]" << std::endl;
-  // // std::cout << "[";
-  // curvature_data_stg_.resize(final_path_.size() - 1);
-  // for (int i = 1; i < final_path_.size(); ++i) {
-  //   double temp_curve =
-  //       TranformYawRange(tf::getYaw(final_path_[i].orientation) -
-  //                        tf::getYaw(final_path_[i - 1].orientation)) /
-  //       std::hypot(final_path_[i].position.x - final_path_[i - 1].position.x,
-  //                  final_path_[i].position.y - final_path_[i - 1].position.y);
-  //   // std::cout << std::round(temp_curve *
-  //   //                         (update_points_orientation_stg_.size() - 1) *
-  //   //                         min_turning_radius_)
-  //   //           << std::endl;
-  //   std::cout << temp_curve << std::endl;
-  //   curvature_data_stg_[i - 1] = temp_curve;
-  // }
+  std::cout << "--------------optimize_final_path_-----------" << std::endl;
+
+  for (auto& elem : optimize_final_path_) {
+    std::cout << elem.position.x << "  " << elem.position.y << "  "
+              << tf::getYaw(elem.orientation) << std::endl;
+  }
+
+  std::cout << "*************curvature*************" << std::endl;
   // std::cout << "]" << std::endl;
-}
-
-void HybridAstar::CreateKDTreeBounderInfo() {
-  ros::WallTime start = ros::WallTime::now();
-
-  KDTreeSP::pointVec temp_vec;
-  double yaw = -tf::getYaw(prime_start_pose_.orientation);
-
-  double prime_x = prime_start_pose_.position.x;
-  double prime_y = prime_start_pose_.position.y;
-
-  for (const auto& elem : bounder_info_) {
-    double temp_x = elem.front() - prime_x;
-    double temp_y = elem.back() - prime_y;
-
-    temp_vec.push_back(
-        KDTreeSP::point_t{temp_x * cos(yaw) - temp_y * sin(yaw),
-                          temp_x * sin(yaw) + temp_y * cos(yaw)});
+  // std::cout << "[";
+  curvature_data_stg_.resize(final_path_.size() - 1);
+  for (int i = 1; i < final_path_.size(); ++i) {
+    double temp_curve =
+        TranformYawRange(tf::getYaw(final_path_[i].orientation) -
+                         tf::getYaw(final_path_[i - 1].orientation)) /
+        std::hypot(final_path_[i].position.x - final_path_[i - 1].position.x,
+                   final_path_[i].position.y - final_path_[i - 1].position.y);
+    // std::cout << std::round(temp_curve *
+    //                         (update_points_orientation_stg_.size() - 1) *
+    //                         min_turning_radius_)
+    //           << std::endl;
+    std::cout << temp_curve << std::endl;
+    curvature_data_stg_[i - 1] = temp_curve;
   }
-
-  kdtree_bounder_ = KDTreeSP::KDTree(temp_vec);
-  ros::WallTime end = ros::WallTime::now();
-
-  std::cout << "KDTree create *** size:" << temp_vec.size()
-            << "  time:" << (end - start).toSec() * 1000 << " ms" << std::endl;
-
-  for (auto& elem : ref_line_) {
-    double temp_x = elem.x - prime_x;
-    double temp_y = elem.y - prime_y;
-
-    elem.x = temp_x * cos(yaw) - temp_y * sin(yaw);
-    elem.y = temp_x * sin(yaw) + temp_y * cos(yaw);
-  }
-}
-
-void HybridAstar::CalculateStartAndGoalPoint() {
-  // set start pose
-  start_pose_.position.x = 0.0;
-  start_pose_.position.y = 0.0;
-
-  start_pose_.orientation = tf::createQuaternionMsgFromYaw(0.0);
-
-  // get goal pose in start pose frame
-  double temp_x = prime_goal_pose_.position.x - prime_start_pose_.position.x;
-  double temp_y = prime_goal_pose_.position.y - prime_start_pose_.position.y;
-  double temp_yaw = tf::getYaw(prime_goal_pose_.orientation);
-
-  //** 坐标相对位置不变，坐标系旋转，所以yaw取负
-  double yaw = -tf::getYaw(prime_start_pose_.orientation);
-
-  goal_pose_.position.x = temp_x * cos(yaw) - temp_y * sin(yaw);
-  goal_pose_.position.y = temp_x * sin(yaw) + temp_y * cos(yaw);
-  goal_pose_.orientation = tf::createQuaternionMsgFromYaw(temp_yaw + yaw);
-
-  // std::cout << "prime_start_pose[x, y, yaw] : [" << prime_start_pose_.position.x
-  //           << ", " << prime_start_pose_.position.y << ", "
-  //           << tf::getYaw(prime_start_pose_.orientation) << "]" << std::endl;
-
-  // std::cout << "prime_goal_pose[x, y, yaw] : [" << prime_goal_pose_.position.x
-  //           << ", " << prime_goal_pose_.position.y << ", "
-  //           << tf::getYaw(prime_goal_pose_.orientation) << "]" << std::endl;
-
-  // std::cout << "start_pose[x, y, yaw] : [" << start_pose_.position.x << ", "
-  //           << start_pose_.position.y << ", "
-  //           << tf::getYaw(start_pose_.orientation) << "]" << std::endl;
-
-  // std::cout << "goal_pose[x, y, yaw] : [" << goal_pose_.position.x << ", "
-  //           << goal_pose_.position.y << ", "
-  //           << tf::getYaw(goal_pose_.orientation) << "]" << std::endl;
-
-  goal_pose_id_ = CalculateID(goal_pose_.position.x, goal_pose_.position.y,
-                              tf::getYaw(goal_pose_.orientation));
-  start_pose_id_ = CalculateID(start_pose_.position.x, start_pose_.position.y,
-                               tf::getYaw(start_pose_.orientation));
-  double start_h =
-      CalculateDisTwoPoint(start_pose_.position, goal_pose_.position);
-  node_stg_[goal_pose_id_] = AstarNode(goal_pose_, DBL_MAX, 0.0);
-  node_stg_[start_pose_id_] = AstarNode(start_pose_, 0.0, start_h);
-
-  goal_info_ = &node_stg_[goal_pose_id_];
-  start_info_ = &node_stg_[start_pose_id_];
-  // std::cout << "goal yaw = " << goal_info_->yaw << std::endl;
-
-  // start point push openlist
-  openlist_.emplace(start_pose_id_, KeyValue(start_info_->h, 0.0));
-  start_info_->state = STATE::OPEN;
-}
-
-void HybridAstar::ConvertPathFrame() {
-  // convert final path
-  for (auto& elem : final_path_) {
-    elem = PoseTransform(prime_start_pose_, elem);
-  }
-
-  // convert prime path
-  for (auto& elem : prime_path_temp_) {
-    elem = PoseTransform(prime_start_pose_, elem);
-  }
+  std::cout << "]" << std::endl;
 }

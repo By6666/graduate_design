@@ -34,16 +34,22 @@ TruckInfo::TruckInfo()
 }
 
 void TruckInfo::TruckShow(const std::vector<geometry_msgs::Pose>& path,
+                          const std::vector<geometry_msgs::Pose>& optimize_path,
                           const ros::Publisher& pub) {
-  static int last_id_num = 0;
+  int id_init = 0;
   visualization_msgs::MarkerArray show_array;
+
+  // clear display
+  visualization_msgs::Marker clear_;
+  clear_.action = visualization_msgs::Marker::DELETEALL;
+  show_array.markers.push_back(clear_);
 
   // show truck central
   visualization_msgs::Marker truck_central;
   truck_central.header.frame_id = "global";
 
   truck_central.ns = "truck_central";
-  truck_central.id = 0;
+  truck_central.id = id_init++;
 
   truck_central.type = 2;
   truck_central.action = visualization_msgs::Marker::ADD;
@@ -65,16 +71,20 @@ void TruckInfo::TruckShow(const std::vector<geometry_msgs::Pose>& path,
   goal_point.header.frame_id = "global";
 
   goal_point.ns = "goal_point";
-  goal_point.id = 1;
+  goal_point.id = id_init++;
 
   goal_point.type = 2;
   goal_point.action = visualization_msgs::Marker::ADD;
 
   goal_point.pose = goal_pose_.pose;
 
-  goal_point.scale.x = node2goal_r_ * 2.0;
-  goal_point.scale.y = node2goal_r_ * 2.0;
-  goal_point.scale.z = 0.1;
+  // goal_point.scale.x = node2goal_r_ * 2.0;
+  // goal_point.scale.y = node2goal_r_ * 2.0;
+  // goal_point.scale.z = 0.1;
+
+  goal_point.scale.x = 2.0;
+  goal_point.scale.y = 2.0;
+  goal_point.scale.z = 0.01;
 
   goal_point.color.r = 1.0f;
   goal_point.color.g = 0.0f;
@@ -113,12 +123,11 @@ void TruckInfo::TruckShow(const std::vector<geometry_msgs::Pose>& path,
   }
   show_array.markers.push_back(avoid_limit);
 
-  // show truck frame
+  // show truck frame, path
   visualization_msgs::Marker truck_box;
   truck_box.header.frame_id = "global";
 
   truck_box.ns = "truck_box";
-  int id_init = 3;
 
   truck_box.type = 4;
   truck_box.action = visualization_msgs::Marker::ADD;
@@ -141,17 +150,34 @@ void TruckInfo::TruckShow(const std::vector<geometry_msgs::Pose>& path,
     show_array.markers.push_back(truck_box);
   }
 
-  int size = show_array.markers.size();
-  if (show_array.markers.size() < last_id_num) {
-    for (int i = size; i < last_id_num; ++i) {
-      truck_box.id = i;
-      truck_box.action = visualization_msgs::Marker::DELETE;
-      show_array.markers.push_back(truck_box);
-    }
-  }
-  last_id_num = size;
+  // show truck frame, optimize path
+  visualization_msgs::Marker truck_box_opt;
+  truck_box_opt.header.frame_id = "global";
 
-  // push all
+  truck_box_opt.ns = "truck_box_opt";
+
+  truck_box_opt.type = 4;
+  truck_box_opt.action = visualization_msgs::Marker::ADD;
+
+  truck_box_opt.scale.x = 0.2;
+  truck_box_opt.scale.y = 0.2;
+
+  truck_box_opt.color.r = 1.0f;
+  truck_box_opt.color.g = 1.0f;
+  truck_box_opt.color.b = 0.0f;
+  truck_box_opt.color.a = 1.0f;
+
+  truck_box_opt.id = id_init++;
+  truck_box_opt.points = TruckFrame(start_pose_.pose);
+  show_array.markers.push_back(truck_box_opt);
+
+  for (auto& elem : optimize_path) {
+    truck_box_opt.id = id_init++;
+    truck_box_opt.points = TruckFrame(elem);
+    show_array.markers.push_back(truck_box_opt);
+  }
+
+  // publish all
   pub.publish(show_array);
 }
 

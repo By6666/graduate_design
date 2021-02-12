@@ -35,8 +35,8 @@ for obstacle in obstacles_json:
   # obs_temp.center.y = 0.0
   # obs_temp.center.z = 0.0
 
-  obs_temp.center.x = 199.0250689557288
-  obs_temp.center.y = 505.4493412328884
+  obs_temp.center.x = 178.0260805534199
+  obs_temp.center.y = 492.6955370102078
   obs_temp.center.z = 30
 
 

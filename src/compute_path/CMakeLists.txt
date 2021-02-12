@@ -124,6 +124,7 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
   ${PYTHON_INCLUDE_DIRS}
 )
+
 link_directories(${PROJECT_SOURCE_DIR}/lib)
 
 ## Declare a C++ library
@@ -159,7 +160,7 @@ link_directories(${PROJECT_SOURCE_DIR}/lib)
 aux_source_directory(${PROJECT_SOURCE_DIR}/src SRC_LIST)
 add_executable(hybrid_A ${SRC_LIST})
 add_dependencies(hybrid_A ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(hybrid_A ${catkin_LIBRARIES} ${PYTHON_LIBRARIES} KDTree)
+target_link_libraries(hybrid_A ${catkin_LIBRARIES} ${PYTHON_LIBRARIES} KDTree piecewise_jerk)
 
 #############
 ## Install ##

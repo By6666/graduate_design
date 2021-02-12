@@ -96,8 +96,8 @@ bool RoadLine::ReadRoadLine() {
   // goal_pose_.orientation = tf::createQuaternionMsgFromYaw(
   //     prime_road_[prime_road_.size() - 180 / simple_segment].yaw);
 
-  goal_pose_.position.x = prime_road_[540 / simple_segment].x;
-  goal_pose_.position.y = prime_road_[540 / simple_segment].y;
+  goal_pose_.position.x = prime_road_[640 / simple_segment].x;
+  goal_pose_.position.y = prime_road_[640 / simple_segment].y;
   goal_pose_.orientation =
       tf::createQuaternionMsgFromYaw(prime_road_[540 / simple_segment].yaw);
 

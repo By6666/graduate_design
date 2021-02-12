@@ -37,7 +37,7 @@ class HybridAstar {
   void RecurPath();
   bool FinalPath();
   bool ComputePath();
-  bool detectCollision(const AstarNode& node);
+  bool OptimizerProcess();
 
   // boundary collision check
   bool BoundaryCollision(const AstarNode* const node_p,
@@ -71,6 +71,12 @@ class HybridAstar {
   inline geometry_msgs::Pose& set_goal_pose() { return prime_goal_pose_; }
   inline geometry_msgs::Pose& set_start_pose() { return prime_start_pose_; }
   inline std::vector<geometry_msgs::Point>& set_ref_line() { return ref_line_; }
+  inline std::vector<geometry_msgs::Point>& set_left_boundary() {
+    return left_boundary_;
+  }
+  inline std::vector<geometry_msgs::Point>& set_right_boundary() {
+    return right_boundary_;
+  }
   inline double& set_truck_width() { return truck_width_; }
   inline double& set_truck_length() { return truck_length_; }
   inline double& set_truck_base2back() { return truck_base2back_; }
@@ -80,6 +86,7 @@ class HybridAstar {
   inline double get_move_step() const { return move_step_; }
   inline PATH_TYPE get_final_path() const { return final_path_; }
   inline PATH_TYPE get_prime_path() const { return prime_path_temp_; }
+  inline PATH_TYPE get_optimize_final_path() const { return optimize_final_path_; }
   inline UPDATE_POS get_update_set() const { return update_set_; }
   inline geometry_msgs::Pose get_goal_pose() const { return goal_pose_; }
   inline geometry_msgs::Pose get_start_pose() const { return start_pose_; }
@@ -109,6 +116,7 @@ class HybridAstar {
   NODE_TYPE node_stg_;
   PATH_TYPE final_path_;
   PATH_TYPE prime_path_temp_;
+  PATH_TYPE optimize_final_path_;
   std::vector<AstarNode*> prime_path_;
   std::vector<float> prime_path_optimize_;
 
@@ -117,6 +125,7 @@ class HybridAstar {
   int path_resolution_;
   int path_fit_degree_;
   bool path_optimize_flg_;
+  bool final_path_convert_flg_;
 
   /* for hybrid Astar */
   int goal_pose_id_, start_pose_id_;
@@ -124,7 +133,7 @@ class HybridAstar {
 
   //** 2020.03.04 modify
   int angle_size_;
-  double move_step_, segment_dis_;
+  double move_step_, segment_dis_, optimize_segment_dis_;
   int extension_point_num_;
   bool use_goal_flg_;
   std::vector<double> update_points_orientation_stg_;
@@ -146,7 +155,7 @@ class HybridAstar {
   std::multiset<int> expend_pos_stg_;
   KDTreeSP::pointVec bounder_info_;
   KDTreeSP::KDTree kdtree_bounder_;
-  std::vector<geometry_msgs::Point> ref_line_;
+  std::vector<geometry_msgs::Point> ref_line_, left_boundary_, right_boundary_;
 
   /* parameter for map */
   double map_resolution_;
@@ -426,6 +435,23 @@ class HybridAstar {
 
     return std::fabs(x0 * unit_y - y0 * unit_x);
   }
+
+  // for path decision
+  void PathDecisionProcess();
+
+  // for path optimize
+  void GetReferenceLine(std::vector<double>* const ref_line);
+
+  void GetxBounds(std::vector<std::pair<double, double>>* const x_bounds);
+
+  double FindNearstY(const std::vector<geometry_msgs::Point>& line,
+                     double arg_x);
+  double FindNearstY(const std::vector<geometry_msgs::Pose>& line,
+                     double arg_x);
+  AstarNode FindNearstPointOnSearchPath(
+      const std::vector<geometry_msgs::Pose>& line, double arg_x);
+
+  std::array<double, 4> GetObjectMinMaxFrame(const PointSet_type& obs);
 };
 
 #endif
