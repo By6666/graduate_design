@@ -6,6 +6,8 @@
     <arg name="place_x" />
     <arg name="place_y" />
 
+    <arg name="obs_path_box_seg" />
+
     <arg name="obstacle_file_path" />
 
     <!-- <arg name="yaw" default="0.0" />
@@ -20,12 +22,14 @@
         <param name="obstacle_file_path" type="string" value="$(arg obstacle_file_path)" />
     </node>
 
-    <node pkg="hollow_create" name="obstacles_display" type="hollow_create" >
+    <node pkg="hollow_create" name="obstacles_display" type="hollow_create" output="screen" >
         <param name="yaw" type="double" value="$(arg yaw)" />
         <param name="size_x" type="double" value="$(arg size_x)" />
         <param name="size_y" type="double" value="$(arg size_y)" />
         <param name="place_x" type="double" value="$(arg place_x)" />
         <param name="place_y" type="double" value="$(arg place_y)" />
+
+        <param name="obs_path_box_seg" type="int" value="$(arg obs_path_box_seg)" />
     </node>
 
 

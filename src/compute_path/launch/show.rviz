@@ -18,6 +18,9 @@ Panels:
         - /back_bounder1
         - /forward_bounder1
         - /center_line1
+        - /MarkerArray3
+        - /MarkerArray3/Namespaces1
+        - /BoundingBoxArray2
       Splitter Ratio: 0.5
     Tree Height: 484
   - Class: rviz/Selection
@@ -77,6 +80,7 @@ Visualization Manager:
         avoid_limit: false
         goal_point: false
         truck_box: true
+        truck_box_opt: false
         truck_central: true
       Queue Size: 100
       Value: true
@@ -102,7 +106,7 @@ Visualization Manager:
       coloring: Flat color
       line width: 0.100000001
       only edge: false
-      show coords: true
+      show coords: false
     - Alpha: 1
       Buffer Length: 1
       Class: rviz/Path
@@ -218,6 +222,26 @@ Visualization Manager:
       Topic: /road_line/center_line
       Unreliable: false
       Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /obstacles_display/obs_trajectorys
+      Name: MarkerArray
+      Namespaces:
+        1_obstacles_trajectory_: true
+      Queue Size: 100
+      Value: true
+    - Class: jsk_rviz_plugin/BoundingBoxArray
+      Enabled: true
+      Name: BoundingBoxArray
+      Topic: /obstacles_display/obs_path_box
+      Unreliable: false
+      Value: true
+      alpha: 0.800000012
+      color: 170; 85; 0
+      coloring: Flat color
+      line width: 0.0799999982
+      only edge: true
+      show coords: false
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -252,11 +276,11 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Scale: 6.0353241
+      Scale: 8.61134911
       Target Frame: <Fixed Frame>
       Value: TopDownOrtho (rviz)
-      X: 207.657257
-      Y: 495.414642
+      X: 41.0632858
+      Y: 7.52597904
     Saved: ~
 Window Geometry:
   Displays:
