@@ -20,6 +20,8 @@ find_package(catkin REQUIRED COMPONENTS
 
 ## System dependencies are found with CMake's conventions
 find_package(PythonLibs 2.7)
+find_package(gflags REQUIRED)
+find_package(glog REQUIRED)
 
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -164,7 +166,12 @@ link_directories(${PROJECT_SOURCE_DIR}/lib)
 aux_source_directory(${PROJECT_SOURCE_DIR}/src SRC_LIST)
 add_executable(hybrid_A ${SRC_LIST})
 add_dependencies(hybrid_A ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(hybrid_A ${catkin_LIBRARIES} ${PYTHON_LIBRARIES} KDTree piecewise_jerk qp_spline)
+target_link_libraries(hybrid_A ${catkin_LIBRARIES} ${PYTHON_LIBRARIES} 
+                    KDTree 
+                    piecewise_jerk 
+                    qp_spline
+                    glog::glog
+                    gflags)
 
 #############
 ## Install ##

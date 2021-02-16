@@ -90,8 +90,17 @@
 
     <!-- speed planning -->
     <arg name="obs_path_duration" default="0.1" />
+    <arg name="total_time" default="8.0" />
+    <arg name="total_length" default="250.0" />
+    <arg name="condition_duration" default="0.1" />
+    <arg name="init_v" default="15.0" />
+    <arg name="init_a" default="0.0" />
+    <arg name="v_ref" default="12.0" />
+    <arg name="v_limit" default="16.67" />
 
-    <node name="hybrid_A" pkg="compute_path" type="hybrid_A" output="screen">
+    <node name="hybrid_A" pkg="compute_path" type="hybrid_A" output="screen" 
+    args="--flagfile=$(find compute_path)/config_gflags/config.gflags" >
+
         <param name="TruckInfo/truck_vel" type="double" value="$(arg truck_vel)" />
         <param name="TruckInfo/truck_width" type="double" value="$(arg truck_width)" />
         <param name="TruckInfo/truck_length" type="double" value="$(arg truck_length)" />
@@ -134,7 +143,14 @@
         <param name="compute_path/map_resolutin" type="double" value="$(arg map_resolutin)" />
 
         <!-- speed planning -->
-        <param name="compute_path/obs_path_duration" type="double" value="$(arg obs_path_duration)" />
+        <param name="compute_speed/obs_path_duration" type="double" value="$(arg obs_path_duration)" />
+        <param name="compute_speed/total_time" type="double" value="$(arg total_time)" />
+        <param name="compute_speed/total_length" type="double" value="$(arg total_length)" />
+        <param name="compute_speed/condition_duration" type="double" value="$(arg condition_duration)" />
+        <param name="compute_speed/init_v" type="double" value="$(arg init_v)" />
+        <param name="compute_speed/init_a" type="double" value="$(arg init_a)" />
+        <param name="compute_speed/v_ref" type="double" value="$(arg v_ref)" />
+        <param name="compute_speed/v_limit" type="double" value="$(arg v_limit)" />
 
     </node>
 

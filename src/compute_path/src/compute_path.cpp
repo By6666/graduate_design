@@ -28,9 +28,6 @@ HybridAstar::HybridAstar() {
   private_nh.param<double>("detect_collision_rate", detect_collision_rate_,
                            0.5);
 
-  // speed planning
-  private_nh.param<double>("obs_path_duration", obs_path_duration_, 0.1);
-
   //** discrete map param
   private_nh.param<int>("map_width", map_width_, 100);
   private_nh.param<int>("map_heigh", map_heigh_, 100);

@@ -122,17 +122,12 @@ file(GLOB_RECURSE SRCS *.cc)
 # aux_source_directory(${PROJECT_SOURCE_DIR}/src SRC_LIST)
 # message(FATAL_ERROR "${SRCS}")
 
-find_package(gflags REQUIRED)
-find_package(glog REQUIRED)
-
 link_directories(/usr/local/lib)
 
 ## Declare a C++ library
 add_library(qp_spline STATIC ${SRCS})
 
 target_link_libraries(qp_spline  
-                      glog
-                      gflags
                       libqpOASES.a)
 
 ## Add cmake target dependencies of the library

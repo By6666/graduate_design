@@ -18,6 +18,9 @@
 #include "tf/tf.h"
 #include "visualization_msgs/MarkerArray.h"
 
+#include "common/limits.h"
+#include "common/references.h"
+
 typedef std::map<int, AstarNode> NODE_TYPE;
 typedef std::vector<geometry_msgs::Pose> PATH_TYPE;
 typedef std::vector<geometry_msgs::Pose> UPDATE_POS;
@@ -456,14 +459,31 @@ class HybridAstar {
 
   std::array<double, 4> GetObjectMinMaxFrame(const PointSet_type& obs);
 
-  // for speed decision
+  // for speed planning
   void SpeedDecisionProcess();
 
   double obs_path_duration_;
+  double speed_planning_total_time_;
+  double speed_planning_total_length_;
+  double speed_planning_condition_duration_;
+  double speed_planning_init_v_;
+  double speed_planning_init_a_;
+  double speed_planning_v_ref_;
+  double speed_planning_v_limit_;
+  int condition_t_konts_nums_;
 
   void CalculateObsSTBox(
       std::vector<std::vector<std::array<double, 3>>>* const st_obs_boxes);
-  void GetSTBounds();
+
+  void GetSLimits(
+      const std::vector<std::vector<std::array<double, 3>>>& st_obs_boxes,
+      math::common::Limits* const s_limits);
+
+  void GetVLimits(math::common::Limits* const v_limits);
+
+  void GetReferenceS(math::common::References* const ref_s);
+
+  void GetReferenceV(math::common::References* const ref_v);
 };
 
 #endif

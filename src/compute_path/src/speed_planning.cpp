@@ -3,6 +3,22 @@
 #include "qp_spline_speed/qp_spline_st_graph.h"
 
 bool HybridAstar::SpeedPlanning() {
+  ros::NodeHandle private_nh("~compute_speed");
+
+  // get speed planning param
+  private_nh.param<double>("obs_path_duration", obs_path_duration_, 0.1);
+  private_nh.param<double>("total_time", speed_planning_total_time_, 8.0);
+  private_nh.param<double>("total_length", speed_planning_total_length_, 250.0);
+  private_nh.param<double>("condition_duration",
+                           speed_planning_condition_duration_, 0.1);
+  private_nh.param<double>("init_v", speed_planning_init_v_, 0.0);
+  private_nh.param<double>("init_a", speed_planning_init_a_, 0.0);
+  private_nh.param<double>("v_ref", speed_planning_v_ref_, 12.0);
+  private_nh.param<double>("v_limit", speed_planning_v_limit_, 16.67);
+
+  condition_t_konts_nums_ = std::ceil(speed_planning_total_time_ /
+                                      speed_planning_condition_duration_);
+
   std::cout << "************* speed planning *************" << std::endl;
 
   // using mlp to decision
@@ -12,69 +28,28 @@ bool HybridAstar::SpeedPlanning() {
   std::vector<std::vector<std::array<double, 3>>> st_obs_boxes;
   CalculateObsSTBox(&st_obs_boxes);
 
-  CommonPoint init_point(0.0, 0.0, 15.0, 0.0);
-  math::common::Limits s_limits;
+  // set speed planning init state
+  CommonPoint init_point(0.0, 0.0, speed_planning_init_v_,
+                         speed_planning_init_a_);
 
   // get s limits
-  for (int i = 0; i < 80; ++i) {
-    double curr_t = i * 0.1;
-    double s_low = 0.0, s_up = 250.0;
+  math::common::Limits s_limits;
+  GetSLimits(st_obs_boxes, &s_limits);
 
-    int dynamic_obs_cnt = 0;
-    for (int j = 0; j < obstacles_info_.obstacles.size(); ++j) {
-      const auto& obstacle = obstacles_info_.obstacles[j];
-      if (obstacle.is_static) {
-        continue;
-      }
-
-      const auto& st_obs_box = st_obs_boxes[dynamic_obs_cnt++];
-
-      if (curr_t > st_obs_box.front()[0] && curr_t < st_obs_box.back()[0]) {
-        const auto cmp = [](const std::array<double, 3>& elem, double x) {
-          return elem[0] < x;
-        };
-        auto it_lower =
-            std::lower_bound(st_obs_box.begin(), st_obs_box.end(), curr_t, cmp);
-
-        if (obstacle.speed_decision == "yield") {
-          s_up = std::min(s_up, it_lower->at(1));
-        } else if (obstacle.speed_decision == "overtake") {
-          s_low = std::max(s_low, it_lower->at(2));
-        }
-      }
-    }
-
-    s_limits.AppendLimit(curr_t, s_low, s_up);
-  }
-
-  std::cout << "s limits ********  [s, l, u]" << std::endl;
-  for (const auto& elem : s_limits.limit_points()) {
-    std::cout << elem.x() << ", " << elem.l() << ", " << elem.u() << std::endl;
-  }
-
-  math::common::Limits v_limits;
   // get v limits
-  for (int i = 0; i < 80; ++i) {
-    double curr_t = i * 0.1;
-    v_limits.AppendLimit(curr_t, 0.0, 16.67);
-  }
+  math::common::Limits v_limits;
+  GetVLimits(&v_limits);
 
   // get a limits
   const std::pair<double, double>& a_limits{-4.0, 4.0};
 
   // get s refs
   math::common::References ref_s;
-  for (int i = 0; i < 80; ++i) {
-    double curr_t = i * 0.1;
-    ref_s.AppendReference(curr_t, 250.0);
-  }
+  GetReferenceS(&ref_s);
 
   // get v refs
   math::common::References ref_v;
-  for (int i = 0; i < 80; ++i) {
-    double curr_t = i * 0.1;
-    ref_v.AppendReference(curr_t, 12.0);
-  }
+  GetReferenceV(&ref_v);
 
   math::qp_spline::QpSplineStGraph qp_solve;
 
@@ -179,5 +154,66 @@ void HybridAstar::CalculateObsSTBox(
     }
 
     st_obs_boxes->push_back(st_obs_box);
+  }
+}
+
+void HybridAstar::GetSLimits(
+    const std::vector<std::vector<std::array<double, 3>>>& st_obs_boxes,
+    math::common::Limits* const s_limits) {
+  for (int i = 0; i < condition_t_konts_nums_; ++i) {
+    double curr_t = i * speed_planning_condition_duration_;
+    double s_low = 0.0, s_up = speed_planning_total_length_;
+
+    int dynamic_obs_cnt = 0;
+    for (int j = 0; j < obstacles_info_.obstacles.size(); ++j) {
+      const auto& obstacle = obstacles_info_.obstacles[j];
+      if (obstacle.is_static) {
+        continue;
+      }
+
+      const auto& st_obs_box = st_obs_boxes[dynamic_obs_cnt++];
+
+      if (curr_t > st_obs_box.front()[0] && curr_t < st_obs_box.back()[0]) {
+        const auto cmp = [](const std::array<double, 3>& elem, double x) {
+          return elem[0] < x;
+        };
+        auto it_lower =
+            std::lower_bound(st_obs_box.begin(), st_obs_box.end(), curr_t, cmp);
+
+        if (obstacle.speed_decision == "yield") {
+          s_up = std::min(s_up, it_lower->at(1));
+        } else if (obstacle.speed_decision == "overtake") {
+          s_low = std::max(s_low, it_lower->at(2));
+        }
+      }
+    }
+
+    s_limits->AppendLimit(curr_t, s_low, s_up);
+  }
+
+  std::cout << "s limits ********  [s, l, u]" << std::endl;
+  for (const auto& elem : s_limits->limit_points()) {
+    std::cout << elem.x() << ", " << elem.l() << ", " << elem.u() << std::endl;
+  }
+}
+
+void HybridAstar::GetVLimits(math::common::Limits* const v_limits) {
+  for (int i = 0; i < condition_t_konts_nums_; ++i) {
+    double curr_t = i * speed_planning_condition_duration_;
+    v_limits->AppendLimit(curr_t, 0.0, speed_planning_v_limit_);
+  }
+}
+
+void HybridAstar::GetReferenceS(math::common::References* const ref_s) {
+  for (int i = 0; i < condition_t_konts_nums_; ++i) {
+    double curr_t = i * speed_planning_condition_duration_;
+    ref_s->AppendReference(curr_t, speed_planning_total_length_);
+  }
+}
+
+void HybridAstar::GetReferenceV(math::common::References* const ref_v) {
+  for (int i = 0; i < 80; ++i) {
+    double curr_t = i * 0.1;
+    ref_v->AppendReference(curr_t, speed_planning_v_ref_);
   }
 }

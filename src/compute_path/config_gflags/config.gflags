@@ -1,0 +1,5 @@
+--log_dir=/home/by/Documents/nocostmap_avoid_hybrid_A/log
+--flagfile=/home/by/Documents/nocostmap_avoid_hybrid_A/src/optimize_speed/src/qp_spline_speed/qp_spline_speed_config.gflagsfile
+--v=4
+
+

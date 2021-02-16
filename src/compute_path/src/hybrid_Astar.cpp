@@ -4,8 +4,13 @@
 
 #include "compute_path/execute.h"
 #include "matplotlibcpp.h"
+#include "common/log.h"
 
 int main(int argc, char** argv) {
+  google::InitGoogleLogging("hybrid_A");
+  google::ParseCommandLineFlags(&argc, &argv, false);
+  google::InstallFailureSignalHandler();
+
   ros::init(argc, argv, "hybrid_A");
   ros::NodeHandle nh;
 

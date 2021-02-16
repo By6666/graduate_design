@@ -22,19 +22,7 @@ namespace qp_spline {
 using math::common::Limits;
 using math::common::References;
 
-QpSplineStGraph::QpSplineStGraph() {
-  google::InitGoogleLogging("qp_spline");
-  int argc = 1;
-  char* argv[1] = {
-      (char*)("--flagfile=/home/by/Documents/nocostmap_avoid_hybrid_A/src/"
-              "optimize_speed/src/qp_spline_speed/"
-              "qp_spline_speed_config.gflagsfile")};
-  char** argv2 = argv;
-  google::ParseCommandLineFlags(&argc, &argv2, false);
-
-  AERROR << "------------flags: " << FLAGS_accel_kernel_weight;
-  Init();
-}
+QpSplineStGraph::QpSplineStGraph() { Init(); }
 
 void QpSplineStGraph::Init() {
   t_knots_resolution_ = FLAGS_total_time / FLAGS_number_of_anchor_t;
