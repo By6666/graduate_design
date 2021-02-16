@@ -28,11 +28,20 @@ inline void PublishFinalPath(const HybridAstar& hybrid_astar,
   final_path.header.frame_id = "global";
   final_path.header.stamp = ros::Time::now();
 
-  for (auto& elem : hybrid_astar.get_final_path()) {
-    geometry_msgs::PoseStamped temp;
-    temp.pose = elem;
-    final_path.poses.push_back(temp);
+  if (hybrid_astar.get_optimize_final_path().size() > 0) {
+    for (auto& elem : hybrid_astar.get_optimize_final_path()) {
+      geometry_msgs::PoseStamped temp;
+      temp.pose = elem;
+      final_path.poses.push_back(temp);
+    }
+  } else {
+    for (auto& elem : hybrid_astar.get_final_path()) {
+      geometry_msgs::PoseStamped temp;
+      temp.pose = elem;
+      final_path.poses.push_back(temp);
+    }
   }
+
   pub.publish(final_path);
 }
 

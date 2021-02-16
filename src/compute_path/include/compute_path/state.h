@@ -2,7 +2,6 @@
 #define STATE_H
 
 #include "geometry_msgs/PoseStamped.h"
-#include "jsk_recognition_msgs/BoundingBoxArray.h"
 #include "tf/tf.h"
 
 #include "hollow_create/Obstacles.h"

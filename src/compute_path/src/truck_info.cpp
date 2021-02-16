@@ -9,16 +9,7 @@ TruckInfo::TruckInfo()
   private_nh_.param<double>("truck_base2back", truck_base2back_, 3.0);
   private_nh_.param<double>("node2goal_r", node2goal_r_, 2.4);
 
-  // private_nh_.param<double>("goal_yaw", goal_yaw_, 0.0);
-  // private_nh_.param<double>("start_yaw", start_yaw_, 0.0);
   private_nh_.param<double>("dist_limit_coff", dist_limit_coff_, 10.0);
-
-  // private_nh_.param<double>("goal_point_x",
-  // goal_pose_.pose.position.x, 50.0);
-  // private_nh_.param<double>("goal_point_y", goal_pose_.pose.position.y, 0.0);
-  // private_nh_.param<double>("start_point_x", start_pose_.pose.position.x,
-  // 0.0); private_nh_.param<double>("start_point_y",
-  // start_pose_.pose.position.y, 0.0);
 
   // 获得障碍物侦测距离
   int dist_limit_temp = static_cast<int>(dist_limit_coff_ * truck_vel_);
@@ -27,10 +18,6 @@ TruckInfo::TruckInfo()
   start_pose_.header.frame_id = goal_pose_.header.frame_id = "global";
   start_pose_.header.stamp = goal_pose_.header.stamp = ros::Time::now();
   start_pose_.pose.position.z = goal_pose_.pose.position.z = 0.0;
-
-  // goal_pose_.pose.orientation = tf::createQuaternionMsgFromYaw(goal_yaw_);
-  // start_pose_.pose.orientation = tf::createQuaternionMsgFromYaw(start_yaw_);
-  // start_ok_ = goal_ok_ = true;
 }
 
 void TruckInfo::TruckShow(const std::vector<geometry_msgs::Pose>& path,

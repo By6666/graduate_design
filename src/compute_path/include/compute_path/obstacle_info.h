@@ -6,11 +6,7 @@
 #include <vector>
 
 #include "compute_path/state.h"
-#include "geometry_msgs/Pose.h"
-#include "nav_msgs/OccupancyGrid.h"
-#include "nav_msgs/Path.h"
 #include "ros/ros.h"
-#include "std_msgs/Header.h"
 
 #include "hollow_create/Obstacles.h"
 

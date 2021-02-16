@@ -58,7 +58,7 @@ int main(int argc, char** argv) {
 
   // pub to velocity planning
   ros::Publisher path_pub =
-      nh.advertise<nav_msgs::Path>("/avoidance_path", 1, true);
+      nh.advertise<nav_msgs::Path>("/path_planning_result", 1, true);
   ros::Publisher flag_pub =
       nh.advertise<geometry_msgs::Point>("/flag", 1, true);
 
@@ -100,7 +100,7 @@ int main(int argc, char** argv) {
       PublishFinalPath(hybrid_astar, path_pub);
     }
 
-    if (test_model_flg && !test_times_cnt) hybrid_astar.PrintPath();
+    // if (test_model_flg && !test_times_cnt) hybrid_astar.PrintPath();
     std::cout << "*********** Hybrid Astar End !! ***********" << std::endl
               << "path_score: " << hybrid_astar.get_path_evaluate_value()
               << "  average_curvature_diff: "

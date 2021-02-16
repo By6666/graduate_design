@@ -5,8 +5,6 @@
 #include <vector>
 
 #include "geometry_msgs/Point.h"
-// #include "geometry_msgs/PoseStamped.h"
-// #include "geometry_msgs/PoseWithCovarianceStamped.h"
 #include "ros/ros.h"
 #include "tf/tf.h"
 #include "visualization_msgs/Marker.h"
@@ -41,7 +39,6 @@ class TruckInfo {
 
   int dist_limit_;
   bool start_ok_, goal_ok_;
-  double start_yaw_, goal_yaw_;
   double dist_limit_coff_, truck_vel_, node2goal_r_;
   geometry_msgs::PoseStamped start_pose_, goal_pose_;
   double truck_length_, truck_width_, truck_base2back_;

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(compute_path)
+project(optimize_speed)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 add_compile_options(-std=c++11)
@@ -8,18 +8,11 @@ add_compile_options(-std=c++11)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  tf
   roscpp
-  nav_msgs
-  std_msgs
-  geometry_msgs
-  visualization_msgs
-  optimize_path
-  optimize_speed
 )
 
 ## System dependencies are found with CMake's conventions
-find_package(PythonLibs 2.7)
+# find_package(Boost REQUIRED COMPONENTS system)
 
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -75,7 +68,7 @@ find_package(PythonLibs 2.7)
 ## Generate added messages and services with any dependencies listed here
 # generate_messages(
 #   DEPENDENCIES
-#   nav_msgs#   std_msgs
+#   std_msgs  # Or other packages containing msgs
 # )
 
 ################################################
@@ -109,8 +102,8 @@ find_package(PythonLibs 2.7)
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
  INCLUDE_DIRS include
-#  LIBRARIES compute_path
- CATKIN_DEPENDS nav_msgs roscpp std_msgs geometry_msgs tf visualization_msgs optimize_path optimize_speed
+#  LIBRARIES optimize_speed
+ CATKIN_DEPENDS roscpp
 #  DEPENDS system_lib
 )
 
@@ -122,19 +115,25 @@ catkin_package(
 ## Your package locations should be listed before other locations
 include_directories(
   include
-  ${catkin_INCLUDE_DIRS}
-  ${PYTHON_INCLUDE_DIRS}
+  # ${catkin_INCLUDE_DIRS}
 )
 
-link_directories(${PROJECT_SOURCE_DIR}/lib)
+file(GLOB_RECURSE SRCS *.cc)
+# aux_source_directory(${PROJECT_SOURCE_DIR}/src SRC_LIST)
+# message(FATAL_ERROR "${SRCS}")
+
+find_package(gflags REQUIRED)
+find_package(glog REQUIRED)
+
+link_directories(/usr/local/lib)
 
 ## Declare a C++ library
-# add_library(info_process STATIC
-#   src/obstacle_info.cpp 
-#   src/truck_info.cpp
-# )
-# target_link_libraries(info_process PUBLIC ${catkin_LIBRARIES})
+add_library(qp_spline STATIC ${SRCS})
 
+target_link_libraries(qp_spline  
+                      glog
+                      gflags
+                      libqpOASES.a)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -144,7 +143,7 @@ link_directories(${PROJECT_SOURCE_DIR}/lib)
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-# add_executable(${PROJECT_NAME}_node src/compute_path_node.cpp)
+# add_executable(${PROJECT_NAME}_node src/optimize_speed_node.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -160,11 +159,6 @@ link_directories(${PROJECT_SOURCE_DIR}/lib)
 # target_link_libraries(${PROJECT_NAME}_node
 #   ${catkin_LIBRARIES}
 # )
-
-aux_source_directory(${PROJECT_SOURCE_DIR}/src SRC_LIST)
-add_executable(hybrid_A ${SRC_LIST})
-add_dependencies(hybrid_A ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(hybrid_A ${catkin_LIBRARIES} ${PYTHON_LIBRARIES} KDTree piecewise_jerk qp_spline)
 
 #############
 ## Install ##
@@ -213,7 +207,7 @@ target_link_libraries(hybrid_A ${catkin_LIBRARIES} ${PYTHON_LIBRARIES} KDTree pi
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_compute_path.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_optimize_speed.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()

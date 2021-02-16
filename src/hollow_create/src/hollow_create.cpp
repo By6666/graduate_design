@@ -23,7 +23,7 @@ int main(int argc, char** argv) {
     pub.publish(obs_trans.GetDisplayMsg());
     pub_obs_trajectorys.publish(obs_trans.GetObsPath());
     pub_obs_path_box.publish(obs_trans.GetObsPathBoxMsg());
-    ros::Duration(0.2).sleep();
+    ros::Duration(2.0).sleep();
   }
 
   return 0;

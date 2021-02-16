@@ -4,7 +4,7 @@
 
     <!-- 参数调整 -->
     <!-- 曲率显示 --> <param name="curvature_show_flg" type="bool" value="false" />  
-    <!-- 测试模式 --> <param name="test_model_flg" type="bool" value="false" />  
+    <!-- 测试模式 --> <param name="test_model_flg" type="bool" value="true" />  
     <!-- 测试次数 --><param name="test_times" type="int" value="1" />
     <!-- 测试地图编号<arg name="file_num" value="5" /> -->
     <!-- 扩展分支数目 --><arg name="extension_point_num" value="5" />
@@ -86,7 +86,10 @@
     <arg name="path_resolution" default="144" />
     <arg name="path_optimize_flg" default="false" />
 
-    <arg name="optimize_segment_dis" default="0.2" />
+    <arg name="optimize_segment_dis" default="0.01" />
+
+    <!-- speed planning -->
+    <arg name="obs_path_duration" default="0.1" />
 
     <node name="hybrid_A" pkg="compute_path" type="hybrid_A" output="screen">
         <param name="TruckInfo/truck_vel" type="double" value="$(arg truck_vel)" />
@@ -130,5 +133,9 @@
         <param name="compute_path/map_origin_x" type="double" value="$(arg map_origin_x)" />
         <param name="compute_path/map_resolutin" type="double" value="$(arg map_resolutin)" />
 
+        <!-- speed planning -->
+        <param name="compute_path/obs_path_duration" type="double" value="$(arg obs_path_duration)" />
+
     </node>
+
 </launch>

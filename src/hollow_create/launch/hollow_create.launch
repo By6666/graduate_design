@@ -22,7 +22,7 @@
         <param name="obstacle_file_path" type="string" value="$(arg obstacle_file_path)" />
     </node>
 
-    <node pkg="hollow_create" name="obstacles_display" type="hollow_create" output="screen" >
+    <node pkg="hollow_create" name="obstacles_display" type="hollow_create" >
         <param name="yaw" type="double" value="$(arg yaw)" />
         <param name="size_x" type="double" value="$(arg size_x)" />
         <param name="size_y" type="double" value="$(arg size_y)" />

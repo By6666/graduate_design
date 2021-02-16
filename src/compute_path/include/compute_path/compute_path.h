@@ -39,6 +39,8 @@ class HybridAstar {
   bool ComputePath();
   bool OptimizerProcess();
 
+  bool SpeedPlanning();
+
   // boundary collision check
   bool BoundaryCollision(const AstarNode* const node_p,
                          const PATH_TYPE& update_set);
@@ -185,6 +187,7 @@ class HybridAstar {
                                  const geometry_msgs::Vector3& size) const;
   // get truck frame
   PointSet_type GetTruckFrame(const AstarNode& central) const;
+  PointSet_type GetTruckFrame(const geometry_msgs::Pose& central) const;
 
   geometry_msgs::Pose PoseTransform(const geometry_msgs::Pose& central,
                                     const geometry_msgs::Pose& pose);
@@ -452,6 +455,15 @@ class HybridAstar {
       const std::vector<geometry_msgs::Pose>& line, double arg_x);
 
   std::array<double, 4> GetObjectMinMaxFrame(const PointSet_type& obs);
+
+  // for speed decision
+  void SpeedDecisionProcess();
+
+  double obs_path_duration_;
+
+  void CalculateObsSTBox(
+      std::vector<std::vector<std::array<double, 3>>>* const st_obs_boxes);
+  void GetSTBounds();
 };
 
 #endif

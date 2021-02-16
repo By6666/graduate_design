@@ -28,6 +28,9 @@ HybridAstar::HybridAstar() {
   private_nh.param<double>("detect_collision_rate", detect_collision_rate_,
                            0.5);
 
+  // speed planning
+  private_nh.param<double>("obs_path_duration", obs_path_duration_, 0.1);
+
   //** discrete map param
   private_nh.param<int>("map_width", map_width_, 100);
   private_nh.param<int>("map_heigh", map_heigh_, 100);
@@ -674,6 +677,8 @@ bool HybridAstar::ExecuteHybridAstar() {
   RecurPath();
 
   bool path_flg = FinalPath();
+
+  bool speed_flg = SpeedPlanning();
 
   // path frame convert
   if (final_path_convert_flg_) {
