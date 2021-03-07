@@ -105,7 +105,7 @@ void SpeedData::DebugString() const {
   AERROR << "************ speed planning result [t, s, v, a, j]************";
   for (const auto& elem : speed_vector_) {
     std::cout << elem.x() << ", " << elem.y() << ", " << elem.y_dot() << ", "
-              << elem.y_ddot() << ", " << elem.y_dddot() << std::endl;
+              << elem.y_ddot() << ", " << elem.y_dddot() << "," << std::endl;
   }
 }
 

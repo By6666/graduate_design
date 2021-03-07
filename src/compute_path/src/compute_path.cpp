@@ -282,6 +282,29 @@ void HybridAstar::UpdatePoseShow(const ros::Publisher& pub) {
   }
   show_array.markers.push_back(final_path);
 
+  // show final path
+  visualization_msgs::Marker opt_final_path;
+  final_path.header.frame_id = "global";
+
+  final_path.ns = "final_opt_path";
+  final_path.id = 4;
+
+  final_path.type = 7;
+  final_path.action = visualization_msgs::Marker::ADD;
+
+  final_path.scale.x = 0.25;
+  final_path.scale.y = 0.25;
+  final_path.scale.z = 0.01;
+
+  final_path.color.r = 0.4f;
+  final_path.color.g = 1.0f;
+  final_path.color.b = 0.4f;
+  final_path.color.a = 1.0f;
+  for (auto& elem : optimize_final_path_) {
+    final_path.points.push_back(elem.position);
+  }
+  show_array.markers.push_back(final_path);
+
   pub.publish(show_array);
 }
 

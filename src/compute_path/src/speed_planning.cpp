@@ -20,6 +20,10 @@ bool HybridAstar::SpeedPlanning() {
                                       speed_planning_condition_duration_);
 
   std::cout << "************* speed planning *************" << std::endl;
+  std::cout << "[init_v, init_a, v_ref, v_limit, a_min, a_max]:["
+            << speed_planning_init_v_ << ", " << speed_planning_init_a_ << ", "
+            << speed_planning_v_ref_ << ", " << speed_planning_v_limit_ << ", "
+            << -4.0 << ", " << 4.0 << "]" << std::endl;
 
   // using mlp to decision
   SpeedDecisionProcess();
@@ -41,7 +45,7 @@ bool HybridAstar::SpeedPlanning() {
   GetVLimits(&v_limits);
 
   // get a limits
-  const std::pair<double, double>& a_limits{-4.0, 4.0};
+  const std::pair<double, double>& a_limits{-4.0, 3.0};
 
   // get s refs
   math::common::References ref_s;
@@ -155,6 +159,15 @@ void HybridAstar::CalculateObsSTBox(
 
     st_obs_boxes->push_back(st_obs_box);
   }
+
+  // for obstacle ST bounding box display
+  std::cout << "obstacle bounding box in ST, [t, ls, up]" << std::endl;
+  for (const auto& st_obs_boxe : *st_obs_boxes) {
+    for (const auto& elem : st_obs_boxe) {
+      std::cout << elem[0] << ", " << elem[1] << ", " << elem[2] << ","
+                << std::endl;
+    }
+  }
 }
 
 void HybridAstar::GetSLimits(
@@ -173,7 +186,7 @@ void HybridAstar::GetSLimits(
 
       const auto& st_obs_box = st_obs_boxes[dynamic_obs_cnt++];
 
-      if (curr_t > st_obs_box.front()[0] && curr_t < st_obs_box.back()[0]) {
+      if (curr_t >= st_obs_box.front()[0] && curr_t <= st_obs_box.back()[0]) {
         const auto cmp = [](const std::array<double, 3>& elem, double x) {
           return elem[0] < x;
         };
@@ -191,9 +204,10 @@ void HybridAstar::GetSLimits(
     s_limits->AppendLimit(curr_t, s_low, s_up);
   }
 
-  std::cout << "s limits ********  [s, l, u]" << std::endl;
+  std::cout << "s limits ********  [t, sl, su]" << std::endl;
   for (const auto& elem : s_limits->limit_points()) {
-    std::cout << elem.x() << ", " << elem.l() << ", " << elem.u() << std::endl;
+    std::cout << elem.x() << ", " << elem.l() << ", " << elem.u() << ","
+              << std::endl;
   }
 }
 

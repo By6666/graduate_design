@@ -57,6 +57,8 @@
     <arg name="start_yaw" default="0.0" />
     <arg name="start_point_x" default="0.0" />
     <arg name="start_point_y" default="0.0" />    
+    <arg name="truck_box_seg" default="25" />
+    <arg name="truck_box_opt_seg" default="500" />
 
     <!-- 直线 -->
     <arg name="goal_yaw" default="0.0" />
@@ -91,12 +93,12 @@
     <!-- speed planning -->
     <arg name="obs_path_duration" default="0.1" />
     <arg name="total_time" default="8.0" />
-    <arg name="total_length" default="250.0" />
+    <arg name="total_length" default="200.0" />
     <arg name="condition_duration" default="0.1" />
-    <arg name="init_v" default="15.0" />
+    <arg name="init_v" default="12.0" />
     <arg name="init_a" default="0.0" />
     <arg name="v_ref" default="12.0" />
-    <arg name="v_limit" default="16.67" />
+    <arg name="v_limit" default="13.89" />
 
     <node name="hybrid_A" pkg="compute_path" type="hybrid_A" output="screen" 
     args="--flagfile=$(find compute_path)/config_gflags/config.gflags" >
@@ -113,6 +115,8 @@
         <param name="TruckInfo/start_point_x" type="double" value="$(arg start_point_x)" />
         <param name="TruckInfo/start_point_y" type="double" value="$(arg start_point_y)" />
         <param name="TruckInfo/dist_limit_coff" type="double" value="$(arg dist_limit_coff)" />
+        <param name="TruckInfo/truck_box_seg" type="int" value="$(arg truck_box_seg)" />
+        <param name="TruckInfo/truck_box_opt_seg" type="int" value="$(arg truck_box_opt_seg)" />
         <param name="compute_path/node2goal_r" type="double" value="$(arg node2goal_r)" />
         <param name="compute_path/heur_dis_cof" type="double" value="$(arg heur_dis_cof)" />
         <param name="compute_path/node2goal_yaw" type="double" value="$(arg node2goal_yaw)" />
