@@ -99,7 +99,8 @@ bool QpSplineStGraph::Solve(SpeedData* const speed_data) {
 
   const double t_output_resolution = FLAGS_trajectory_time_min_interval;
   double time = 0.0;
-  while (time < FLAGS_total_time + t_output_resolution) {
+  // while (time < FLAGS_total_time + t_output_resolution) {
+  while (time < FLAGS_total_time) {
     double s = spline(time);
     double v = std::max(0.0, spline.Derivative(time));
     double a = spline.SecondOrderDerivative(time);
@@ -178,6 +179,12 @@ bool QpSplineStGraph::AddConstraint() {
   // Initial point s_dot(v) constraint
   if (!constraint->AddPointDerivativeConstraint(0.0, init_point_.y_dot())) {
     AERROR << "Add st start point velocity constraint failed!";
+    return false;
+  }
+
+  if (!constraint->AddPointSecondDerivativeConstraint(0.0,
+                                                      init_point_.y_ddot())) {
+    AERROR << "Add st start point accelerate constraint failed!";
     return false;
   }
 

@@ -1,6 +1,7 @@
---accel_kernel_weight=1e3
---jerk_kernel_weight=1e5
---cruise_kernel_weight=3.2
---speed_kernel_weight=1.0
---init_acc_target_weight=5e4
+--accel_kernel_weight=1e2
+--jerk_kernel_weight=1e3
+--cruise_kernel_weight=1.0
+--speed_kernel_weight=80
+--init_acc_target_weight=0.0
 --regularization_weight=0.1
+--number_of_anchor_t=4

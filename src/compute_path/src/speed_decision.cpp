@@ -10,6 +10,6 @@ void HybridAstar::SpeedDecisionProcess() {
       continue;
     }
 
-    obstacle.speed_decision = "yield";
+    obstacle.speed_decision = "overtake";
   }
 }

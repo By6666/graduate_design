@@ -4,9 +4,9 @@
  */
 int Collision::order(const Line& line, const Point_type& pt) const {
   // 通过向量的外积判断
-  int intOrientation = (line.p_end.y - line.p_start.y) * (pt.x - line.p_end.x) -
+  double intOrientation = (line.p_end.y - line.p_start.y) * (pt.x - line.p_end.x) -
                        (line.p_end.x - line.p_start.x) * (pt.y - line.p_end.y);
-  if (intOrientation == 0) return 0;  // colinear
+  if (intOrientation < DBL_EPSILON) return 0;  // colinear
   if (intOrientation > 0) return 1;   // right side
   if (intOrientation < 0) return -1;  // left side
 };

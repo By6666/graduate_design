@@ -11,6 +11,9 @@ TruckInfo::TruckInfo()
 
   private_nh_.param<double>("dist_limit_coff", dist_limit_coff_, 10.0);
 
+  private_nh_.param<int>("truck_box_seg", truck_box_seg_, 10);
+  private_nh_.param<int>("truck_box_opt_seg", truck_box_opt_seg_, 10);
+
   // 获得障碍物侦测距离
   int dist_limit_temp = static_cast<int>(dist_limit_coff_ * truck_vel_);
   dist_limit_ = (dist_limit_temp > 20) ? dist_limit_temp : 20;
@@ -43,8 +46,8 @@ void TruckInfo::TruckShow(const std::vector<geometry_msgs::Pose>& path,
 
   truck_central.pose = start_pose_.pose;
 
-  truck_central.scale.x = 2.0;
-  truck_central.scale.y = 2.0;
+  truck_central.scale.x = 1.0;
+  truck_central.scale.y = 1.0;
   truck_central.scale.z = 0.01;
 
   truck_central.color.r = 1.0f;
@@ -69,8 +72,8 @@ void TruckInfo::TruckShow(const std::vector<geometry_msgs::Pose>& path,
   // goal_point.scale.y = node2goal_r_ * 2.0;
   // goal_point.scale.z = 0.1;
 
-  goal_point.scale.x = 2.0;
-  goal_point.scale.y = 2.0;
+  goal_point.scale.x = 1.0;
+  goal_point.scale.y = 1.0;
   goal_point.scale.z = 0.01;
 
   goal_point.color.r = 1.0f;
@@ -119,8 +122,8 @@ void TruckInfo::TruckShow(const std::vector<geometry_msgs::Pose>& path,
   truck_box.type = 4;
   truck_box.action = visualization_msgs::Marker::ADD;
 
-  truck_box.scale.x = 0.2;
-  truck_box.scale.y = 0.2;
+  truck_box.scale.x = 0.1;
+  truck_box.scale.y = 0.1;
 
   truck_box.color.r = 0.18f;
   truck_box.color.g = 0.56f;
@@ -130,11 +133,15 @@ void TruckInfo::TruckShow(const std::vector<geometry_msgs::Pose>& path,
   truck_box.id = id_init++;
   truck_box.points = TruckFrame(start_pose_.pose);
   show_array.markers.push_back(truck_box);
-
+  int display_cnt = 0;
   for (auto& elem : path) {
-    truck_box.id = id_init++;
-    truck_box.points = TruckFrame(elem);
-    show_array.markers.push_back(truck_box);
+    if (display_cnt == truck_box_seg_) {
+      truck_box.id = id_init++;
+      truck_box.points = TruckFrame(elem);
+      show_array.markers.push_back(truck_box);
+      display_cnt = 0;
+    }
+    ++display_cnt;
   }
 
   // show truck frame, optimize path
@@ -146,22 +153,27 @@ void TruckInfo::TruckShow(const std::vector<geometry_msgs::Pose>& path,
   truck_box_opt.type = 4;
   truck_box_opt.action = visualization_msgs::Marker::ADD;
 
-  truck_box_opt.scale.x = 0.2;
-  truck_box_opt.scale.y = 0.2;
+  truck_box_opt.scale.x = 0.1;
+  truck_box_opt.scale.y = 0.1;
 
-  truck_box_opt.color.r = 1.0f;
-  truck_box_opt.color.g = 1.0f;
-  truck_box_opt.color.b = 0.0f;
+  truck_box_opt.color.r = 0.18f;
+  truck_box_opt.color.g = 0.56f;
+  truck_box_opt.color.b = 1.0f;
   truck_box_opt.color.a = 1.0f;
 
   truck_box_opt.id = id_init++;
   truck_box_opt.points = TruckFrame(start_pose_.pose);
   show_array.markers.push_back(truck_box_opt);
 
+  display_cnt = 0;
   for (auto& elem : optimize_path) {
-    truck_box_opt.id = id_init++;
-    truck_box_opt.points = TruckFrame(elem);
-    show_array.markers.push_back(truck_box_opt);
+    if (display_cnt == truck_box_opt_seg_) {
+      truck_box_opt.id = id_init++;
+      truck_box_opt.points = TruckFrame(elem);
+      show_array.markers.push_back(truck_box_opt);
+      display_cnt = 0;
+    }
+    ++display_cnt;
   }
 
   // publish all
