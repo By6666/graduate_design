@@ -81,12 +81,22 @@ bool RoadLine::ReadRoadLine() {
   }
   fclose(File);
 
+  // int start_pose_index = 200;
+  // int goal_pose_index = 660;
+  // // int start_pose_index = 660;
+  int goal_pose_index = 1000;
+
+  // [65.61, 7.37064, 0.887853]
+
   // set start pose
-  start_pose_.position.x = prime_road_[40 / simple_segment].x;
-  start_pose_.position.y = prime_road_[40 / simple_segment].y;
-  start_pose_.orientation =
-      tf::createQuaternionMsgFromYaw(prime_road_[40 / simple_segment].yaw);
-  // start_pose_.orientation = tf::createQuaternionMsgFromYaw(0.0);
+  // start_pose_.position.x = prime_road_[start_pose_index / simple_segment].x;
+  // start_pose_.position.y = prime_road_[start_pose_index / simple_segment].y;
+  // start_pose_.orientation = tf::createQuaternionMsgFromYaw(
+  //     prime_road_[start_pose_index / simple_segment].yaw);
+
+  start_pose_.position.x = 65.61;
+  start_pose_.position.y = 7.37064;
+  start_pose_.orientation = tf::createQuaternionMsgFromYaw(0.887853);
 
   // set goal pose
   // goal_pose_.position.x =
@@ -96,12 +106,19 @@ bool RoadLine::ReadRoadLine() {
   // goal_pose_.orientation = tf::createQuaternionMsgFromYaw(
   //     prime_road_[prime_road_.size() - 180 / simple_segment].yaw);
 
-  goal_pose_.position.x = prime_road_[640 / simple_segment].x;
-  goal_pose_.position.y = prime_road_[640 / simple_segment].y;
-  goal_pose_.orientation =
-      tf::createQuaternionMsgFromYaw(prime_road_[540 / simple_segment].yaw);
+  goal_pose_.position.x = prime_road_[goal_pose_index / simple_segment].x;
+  goal_pose_.position.y = prime_road_[goal_pose_index / simple_segment].y;
+  goal_pose_.orientation = tf::createQuaternionMsgFromYaw(
+      prime_road_[goal_pose_index / simple_segment].yaw);
 
   // goal_pose_.orientation = tf::createQuaternionMsgFromYaw(0.0);
+
+  // std::cout << "prime start point: [x,y,yaw]: " << start_pose_.position.x
+  //           << ", " << start_pose_.position.y << ", "
+  //           << prime_road_[start_pose_index / simple_segment].yaw << std::endl;
+  std::cout << "prime goal point: [x,y,yaw]: " << goal_pose_.position.x << ", "
+            << goal_pose_.position.y << ", "
+            << prime_road_[goal_pose_index / simple_segment].yaw << std::endl;
 
   return true;
 }

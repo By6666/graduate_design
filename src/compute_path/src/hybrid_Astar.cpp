@@ -143,6 +143,7 @@ int main(int argc, char** argv) {
         flag_pub.publish(flag_);
       }
       hybrid_astar.PrintMapSize();
+      hybrid_astar.PrintPath();
       std::cout << std::endl << std::endl;
       break;
     }

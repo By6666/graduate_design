@@ -42,6 +42,7 @@ class TruckInfo {
   double dist_limit_coff_, truck_vel_, node2goal_r_;
   geometry_msgs::PoseStamped start_pose_, goal_pose_;
   double truck_length_, truck_width_, truck_base2back_;
+  int truck_box_seg_, truck_box_opt_seg_; 
 
   std::vector<geometry_msgs::Point> TruckFrame(
       const geometry_msgs::Pose& central);

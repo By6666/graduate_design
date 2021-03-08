@@ -138,7 +138,7 @@ void TransObsMsg::ReleaseObstaclesTrajectory(
       auto temp_point = PoseTransform(obstacle.center, point);
       obs_trajectory.points.push_back(temp_point);
 
-      if (obstacle.label == 1 && cnt == obs_path_box_seg_) {
+      if (/*obstacle.label == 1 && */cnt == obs_path_box_seg_) {
         box_temp.pose.position.x = temp_point.x;
         box_temp.pose.position.y = temp_point.y;
         box_temp.pose.position.z = 0.0;

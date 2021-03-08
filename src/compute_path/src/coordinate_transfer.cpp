@@ -28,37 +28,43 @@ void HybridAstar::CreateKDTreeBounderInfo() {
             << std::endl;
 
   for (auto& elem : ref_line_) {
+    std::cout << elem.x << ", " << elem.y << std::endl;
+
     double temp_x = elem.x - prime_x;
     double temp_y = elem.y - prime_y;
 
     elem.x = temp_x * cos(yaw) - temp_y * sin(yaw);
     elem.y = temp_x * sin(yaw) + temp_y * cos(yaw);
 
-    std::cout << elem.x << ", " << elem.y << std::endl;
+    // std::cout << elem.x << ", " << elem.y << std::endl;
   }
 
   std::cout << "***********left_boundary: [x, y], size:"
             << left_boundary_.size() << std::endl;
   for (auto& elem : left_boundary_) {
+    std::cout << elem.x << ", " << elem.y << std::endl;
+
     double temp_x = elem.x - prime_x;
     double temp_y = elem.y - prime_y;
 
     elem.x = temp_x * cos(yaw) - temp_y * sin(yaw);
     elem.y = temp_x * sin(yaw) + temp_y * cos(yaw);
 
-    std::cout << elem.x << ", " << elem.y << std::endl;
+    // std::cout << elem.x << ", " << elem.y << std::endl;
   }
 
   std::cout << "***********right_boundary: [x, y], size:"
             << right_boundary_.size() << std::endl;
   for (auto& elem : right_boundary_) {
+    std::cout << elem.x << ", " << elem.y << std::endl;
+
     double temp_x = elem.x - prime_x;
     double temp_y = elem.y - prime_y;
 
     elem.x = temp_x * cos(yaw) - temp_y * sin(yaw);
     elem.y = temp_x * sin(yaw) + temp_y * cos(yaw);
 
-    std::cout << elem.x << ", " << elem.y << std::endl;
+    // std::cout << elem.x << ", " << elem.y << std::endl;
   }
 }
 
@@ -132,4 +138,9 @@ void HybridAstar::ConvertPathFrame() {
   for (auto& elem : optimize_final_path_) {
     elem = PoseTransform(prime_start_pose_, elem);
   }
-}
+  std::cout << "optimize path goal: [x, y, yaw]: ["
+            << optimize_final_path_.back().position.x << ", "
+            << optimize_final_path_.back().position.y << ", "
+            << tf::getYaw(optimize_final_path_.back().orientation) << "]"
+            << std::endl;
+} 
