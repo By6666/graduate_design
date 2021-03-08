@@ -62,7 +62,9 @@ bool HybridAstar::OptimizerProcess() {
 
   // set end s target
   optimizer.set_layers()[0].SetTarget(goal_state[0], num_of_knots - 1);
-  optimizer.set_layers()[0].SetWeight(10.0, num_of_knots - 1);
+  optimizer.set_layers()[0].SetWeight(1000.0, num_of_knots - 1);
+  optimizer.set_layers()[1].SetTarget(goal_state[1], num_of_knots - 1);
+  optimizer.set_layers()[1].SetWeight(1e2, num_of_knots - 1);
 
   // go optimize
   auto optimize_result = optimizer.Optimize();
@@ -75,9 +77,10 @@ bool HybridAstar::OptimizerProcess() {
   const std::vector<double>& dy = optimizer.opt_dx();
   const std::vector<double>& ddy = optimizer.opt_ddx();
 
-  std::cout << "***** optimize result ****** [y, dy, ddy]" << std::endl;
+  std::cout << "***** optimize result ****** [x, y, dy, ddy]" << std::endl;
   for (int i = 0; i < num_of_knots; ++i) {
-    std::cout << y[i] << ", " << dy[i] << ", " << ddy[i] << std::endl;
+    std::cout << optimize_segment_dis_ * i << ", " << y[i] << ", " << dy[i]
+              << ", " << ddy[i] << std::endl;
   }
   std::cout << "goal_pose[x, y, yaw] : [" << goal_pose_.position.x << ", "
             << goal_pose_.position.y << ", "
@@ -114,7 +117,7 @@ void HybridAstar::GetReferenceLine(std::vector<double>* const ref_line) {
   for (int i = 0; i < ref_line->size(); ++i) {
     double curr_x = i * optimize_segment_dis_;
 
-    std::cout << "[" << curr_x << ", " << ref_line->at(i) << "]" << std::endl;
+    std::cout << curr_x << ", " << ref_line->at(i) << std::endl;
   }
 }
 
@@ -131,11 +134,23 @@ void HybridAstar::GetxBounds(
       const auto& obs = obstacles_list_[i];
 
       if (obstacles_info_.obstacles[i].path_decision == "left") {
-        left_decision_obs_frame.push_back(GetObjectMinMaxFrame(obs));
+        auto min_max_frame = GetObjectMinMaxFrame(obs);
+        // print obs min max boundary
+        std::cout
+            << "obstacle min_max_boundary:[min_x, max_x, min_y, max_y] : ["
+            << min_max_frame[0] << ", " << min_max_frame[1] << ", "
+            << min_max_frame[2] << ", " << min_max_frame[3] << "]" << std::endl;
+        left_decision_obs_frame.push_back(min_max_frame);
       }
 
       if (obstacles_info_.obstacles[i].path_decision == "right") {
-        right_decision_obs_frame.push_back(GetObjectMinMaxFrame(obs));
+        auto min_max_frame = GetObjectMinMaxFrame(obs);
+        // print obs min max boundary
+        std::cout
+            << "obstacle min_max_boundary:[min_x, max_x, min_y, max_y] : ["
+            << min_max_frame[0] << ", " << min_max_frame[1] << ", "
+            << min_max_frame[2] << ", " << min_max_frame[3] << "]" << std::endl;
+        right_decision_obs_frame.push_back(min_max_frame);
       }
     }
   }
@@ -179,8 +194,8 @@ void HybridAstar::GetxBounds(
   std::cout << "******* optimize left and right: [x, right, left]" << std::endl;
   for (int i = 0; i < num_of_knots; ++i) {
     const auto& bounds = x_bounds->at(i);
-    std::cout << "[" << i * optimize_segment_dis_ << ", " << bounds.first
-              << ", " << bounds.second << "]" << std::endl;
+    std::cout << i * optimize_segment_dis_ << ", " << bounds.first << ", "
+              << bounds.second << std::endl;
   }
 }
 
