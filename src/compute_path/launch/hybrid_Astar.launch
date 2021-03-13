@@ -50,7 +50,7 @@
 
     <!-- eco references create -->
     <include file="$(find eco_references)/launch/eco_references.launch">
-        <arg name="file_name" value="$(find eco_references)/eco_result/result-final800.csv" />
+        <arg name="file_name" value="$(find eco_references)/eco_result/result-final1400.csv" />
     </include>
     
     <!-- compute_pth set param -->
@@ -93,15 +93,15 @@
     <arg name="path_resolution" default="144" />
     <arg name="path_optimize_flg" default="false" />
 
-    <arg name="optimize_segment_dis" default="0.01" />
+    <arg name="optimize_segment_dis" default="0.1" />
 
     <!-- speed planning -->
     <arg name="obs_path_duration" default="0.1" />
-    <arg name="total_time" default="120.0" />
-    <arg name="total_length" default="800.0" />
-    <arg name="condition_duration" default="0.1" />
+    <arg name="total_time" default="300.0" />
+    <arg name="total_length" default="1400.0" /> 
     <arg name="init_v" default="0.0" />
     <arg name="init_a" default="0.0" />
+    <arg name="condition_duration" default="0.1" />
     <arg name="v_ref" default="12.0" />
     <arg name="v_limit" default="13.89" />
 

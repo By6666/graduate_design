@@ -34,7 +34,7 @@ namespace math {
 namespace qp_spline {
 namespace {
 
-constexpr double kMaxBound = 1e3;
+constexpr double kMaxBound = 2e3;
 }
 
 using Eigen::MatrixXd;
@@ -162,7 +162,7 @@ bool Spline1dGenerator::Solve() {
                        inequality_constraint_boundary.rows() * num_param);
 
   // initialize problem
-  int max_iteration_ = 1000;
+  int max_iteration_ = 10000000;
   int max_iter = std::max(max_iteration_, num_constraint);
 
   ::qpOASES::returnValue ret;

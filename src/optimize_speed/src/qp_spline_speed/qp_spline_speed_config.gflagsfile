@@ -1,8 +1,10 @@
 --accel_kernel_weight=1e2
 --jerk_kernel_weight=1e3
---cruise_kernel_weight=3.0
---speed_kernel_weight=2.85
---init_acc_target_weight=1e10
---regularization_weight=0.1
+--cruise_kernel_weight=20.0
+--speed_kernel_weight=1.0
+--init_acc_target_weight=1e8
+--regularization_weight=1.0
 --number_of_anchor_t=40
---total_time=120
+--total_time=300
+--total_lenght=1400
+--trajectory_time_min_interval=0.1
