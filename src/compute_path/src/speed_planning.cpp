@@ -100,7 +100,7 @@ void HybridAstar::CalculateObsSTBox(
     std::vector<std::array<double, 3>> st_obs_box;
 
     for (int i = 0; i < obs_path.size(); ++i) {
-      double curr_t = 15.0 + i * obs_path_duration_;
+      double curr_t = obstacle.delay_time + i * obs_path_duration_;
 
       geometry_msgs::Point temp_point;
       temp_point.x = obs_path[i].x * cos(temp_center.z) -
@@ -165,7 +165,7 @@ void HybridAstar::CalculateObsSTBox(
   std::ofstream file;
   file.open("/home/by/Desktop/unit_ECO_single_result/obs_box.csv",
             std::ios_base::out);
-  if(!file.is_open()){
+  if (!file.is_open()) {
     std::cout << "obstacle boxing file open failed !!";
     return;
   }
@@ -248,8 +248,11 @@ void HybridAstar::GetReferenceS(math::common::References* const ref_s) {
     auto it = std::lower_bound(eco_path.begin(), eco_path.end(), curr_t, cmp);
     // ref_s->AppendReference(curr_t, speed_planning_total_length_);
     // ref_s->AppendReference(curr_t, curr_t * speed_planning_v_ref_);
-    ref_s->AppendReference(curr_t, it->s);
-
+    if (it != eco_path.end()) {
+      ref_s->AppendReference(curr_t, it->s);
+    } else {
+      ref_s->AppendReference(curr_t, speed_planning_total_length_);
+    }
   }
 }
 
@@ -261,6 +264,10 @@ void HybridAstar::GetReferenceV(math::common::References* const ref_v) {
     double curr_t = i * speed_planning_condition_duration_;
     // ref_v->AppendReference(curr_t, speed_planning_v_ref_);
     auto it = std::lower_bound(eco_path.begin(), eco_path.end(), curr_t, cmp);
-    ref_v->AppendReference(curr_t, it->v);
+    if (it != eco_path.end()) {
+      ref_v->AppendReference(curr_t, it->v);
+    } else {
+      ref_v->AppendReference(curr_t, 0.0);
+    }
   }
 }

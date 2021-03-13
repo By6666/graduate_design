@@ -5,3 +5,4 @@ bool is_static
 uint32 label
 string path_decision
 string speed_decision
+float32 delay_time

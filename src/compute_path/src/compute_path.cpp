@@ -1,5 +1,7 @@
 #include "compute_path/compute_path.h"
 
+#include <fstream>
+
 HybridAstar::HybridAstar() {
   ros::NodeHandle private_nh("~compute_path");
 
@@ -284,26 +286,26 @@ void HybridAstar::UpdatePoseShow(const ros::Publisher& pub) {
 
   // show final path
   visualization_msgs::Marker opt_final_path;
-  final_path.header.frame_id = "global";
+  opt_final_path.header.frame_id = "global";
 
-  final_path.ns = "final_opt_path";
-  final_path.id = 4;
+  opt_final_path.ns = "final_opt_path";
+  opt_final_path.id = 4;
 
-  final_path.type = 7;
-  final_path.action = visualization_msgs::Marker::ADD;
+  opt_final_path.type = 7;
+  opt_final_path.action = visualization_msgs::Marker::ADD;
 
-  final_path.scale.x = 0.25;
-  final_path.scale.y = 0.25;
-  final_path.scale.z = 0.01;
+  opt_final_path.scale.x = 0.25;
+  opt_final_path.scale.y = 0.25;
+  opt_final_path.scale.z = 0.01;
 
-  final_path.color.r = 0.4f;
-  final_path.color.g = 1.0f;
-  final_path.color.b = 0.4f;
-  final_path.color.a = 1.0f;
+  opt_final_path.color.r = 0.4f;
+  opt_final_path.color.g = 1.0f;
+  opt_final_path.color.b = 0.4f;
+  opt_final_path.color.a = 1.0f;
   for (auto& elem : optimize_final_path_) {
-    final_path.points.push_back(elem.position);
+    opt_final_path.points.push_back(elem.position);
   }
-  show_array.markers.push_back(final_path);
+  show_array.markers.push_back(opt_final_path);
 
   pub.publish(show_array);
 }
@@ -704,6 +706,7 @@ bool HybridAstar::ExecuteHybridAstar() {
   if (final_path_convert_flg_) {
     ConvertPathFrame();
   }
+  PrintPath();
 
   if (!flag) {
     HintShow("Path Optimize Failed !!");
@@ -726,19 +729,32 @@ void HybridAstar::PrintPath() {
   //                           << std::endl;
   //   }
   // std::cout << "[";
-  std::cout << "--------------final_path_-----------" << std::endl;
+  // std::cout << "--------------final_path_-----------" << std::endl;
 
-  for (auto& elem : final_path_) {
-    std::cout << elem.position.x << "  " << elem.position.y << "  "
-              << tf::getYaw(elem.orientation) << std::endl;
+  // for (auto& elem : final_path_) {
+  //   std::cout << elem.position.x << "  " << elem.position.y << "  "
+  //             << tf::getYaw(elem.orientation) << std::endl;
+  // }
+
+  // std::cout << "--------------optimize_final_path_-----------" << std::endl;
+
+  // for (auto& elem : optimize_final_path_) {
+  //   std::cout << elem.position.x << "  " << elem.position.y << "  "
+  //             << tf::getYaw(elem.orientation) << std::endl;
+  // }
+
+  std::ofstream file;
+  file.open("/home/by/Desktop/unit_ECO_single_result/search_result.csv",
+            std::ios_base::out);
+  if (!file.is_open()) {
+    std::cout << "search_result file open failed !!";
+    return;
   }
-
-  std::cout << "--------------optimize_final_path_-----------" << std::endl;
-
-  for (auto& elem : optimize_final_path_) {
-    std::cout << elem.position.x << "  " << elem.position.y << "  "
-              << tf::getYaw(elem.orientation) << std::endl;
-  }
+  file << "x, y, yaw, kappa" << std::endl;
+  file << final_path_.front().position.x << ", "
+       << final_path_.front().position.y << ", "
+       << tf::getYaw(final_path_.front().orientation) << ", " << 0.0
+       << std::endl;
 
   std::cout << "*************curvature*************" << std::endl;
   // std::cout << "]" << std::endl;
@@ -754,8 +770,12 @@ void HybridAstar::PrintPath() {
     //                         (update_points_orientation_stg_.size() - 1) *
     //                         min_turning_radius_)
     //           << std::endl;
-    std::cout << temp_curve << std::endl;
-    curvature_data_stg_[i - 1] = temp_curve;
+    // std::cout << temp_curve << std::endl;
+    // curvature_data_stg_[i - 1] = temp_curve;
+    file << final_path_[i].position.x << ", " << final_path_[i].position.y
+         << ", " << tf::getYaw(final_path_[i].orientation) << ", " << temp_curve
+         << std::endl;
   }
-  std::cout << "]" << std::endl;
+  // std::cout << "]" << std::endl;
+  file.close();
 }

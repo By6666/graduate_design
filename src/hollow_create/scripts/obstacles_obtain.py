@@ -30,10 +30,17 @@ for obstacle in obstacles_json:
   obs_temp.obs_box.y = obstacle['obs_box']['y']
   obs_temp.obs_box.z = obstacle['obs_box']['z']
 
-  #yield case obstacle center
-  obs_temp.center.x = 16.0
-  obs_temp.center.y = 15.0
-  obs_temp.center.z = -35.0 / 57.3
+  if obs_temp.is_static:
+    obs_temp.center.x = 200
+    obs_temp.center.y = 0.0
+    obs_temp.center.z = 0.0
+    obs_temp.delay_time = 0.0
+  else:
+    #yield case obstacle center
+    obs_temp.center.x = 106.0
+    obs_temp.center.y = 15.0
+    obs_temp.center.z = -35.0 / 57.3
+    obs_temp.delay_time = 25.0
 
   # # overtake case obstacle center
   # obs_temp.center.x = 36.0

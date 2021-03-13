@@ -1,5 +1,7 @@
 #include "compute_path/compute_path.h"
 
+#include "fstream"
+
 void HybridAstar::CreateKDTreeBounderInfo() {
   ros::WallTime start = ros::WallTime::now();
 
@@ -26,6 +28,15 @@ void HybridAstar::CreateKDTreeBounderInfo() {
 
   std::cout << "***********refline: [x, y], size:" << ref_line_.size()
             << std::endl;
+  
+  std::ofstream file;
+  file.open("/home/by/Desktop/unit_ECO_single_result/lane_boundary.csv",
+            std::ios_base::out);
+  if (!file.is_open()) {
+    std::cout << "prime boundary file open failed !!";
+    return;
+  }
+  file << "x, y" << std::endl;
 
   for (auto& elem : ref_line_) {
     double temp_x = elem.x - prime_x;
@@ -34,7 +45,8 @@ void HybridAstar::CreateKDTreeBounderInfo() {
     elem.x = temp_x * cos(yaw) - temp_y * sin(yaw);
     elem.y = temp_x * sin(yaw) + temp_y * cos(yaw);
 
-    std::cout << elem.x << ", " << elem.y << std::endl;
+    // std::cout << elem.x << ", " << elem.y << std::endl;
+    file << elem.x << ", " << elem.y << std::endl;
   }
 
   std::cout << "***********left_boundary: [x, y], size:"
@@ -46,7 +58,8 @@ void HybridAstar::CreateKDTreeBounderInfo() {
     elem.x = temp_x * cos(yaw) - temp_y * sin(yaw);
     elem.y = temp_x * sin(yaw) + temp_y * cos(yaw);
 
-    std::cout << elem.x << ", " << elem.y << std::endl;
+    // std::cout << elem.x << ", " << elem.y << std::endl;
+    file << elem.x << ", " << elem.y << std::endl;
   }
 
   std::cout << "***********right_boundary: [x, y], size:"
@@ -57,9 +70,10 @@ void HybridAstar::CreateKDTreeBounderInfo() {
 
     elem.x = temp_x * cos(yaw) - temp_y * sin(yaw);
     elem.y = temp_x * sin(yaw) + temp_y * cos(yaw);
-
-    std::cout << elem.x << ", " << elem.y << std::endl;
+    // std::cout << elem.x << ", " << elem.y << std::endl;
+    file << elem.x << ", " << elem.y << std::endl;
   }
+  file.close();
 }
 
 void HybridAstar::CalculateStartAndGoalPoint() {

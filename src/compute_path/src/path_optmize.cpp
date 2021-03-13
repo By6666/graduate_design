@@ -2,6 +2,7 @@
 #include "tf/tf.h"
 
 #include <array>
+#include <fstream>
 
 #include "piecewise_jerk/piecewise_jerk_path_problem.h"
 #include "common/linear_interpolation.h"
@@ -75,10 +76,23 @@ bool HybridAstar::OptimizerProcess() {
   const std::vector<double>& dy = optimizer.opt_dx();
   const std::vector<double>& ddy = optimizer.opt_ddx();
 
-  std::cout << "***** optimize result ****** [y, dy, ddy]" << std::endl;
-  for (int i = 0; i < num_of_knots; ++i) {
-    std::cout << y[i] << ", " << dy[i] << ", " << ddy[i] << std::endl;
+  std::ofstream file;
+  file.open("/home/by/Desktop/unit_ECO_single_result/optimize_result.csv",
+            std::ios_base::out);
+  if (!file.is_open()) {
+    std::cout << "optimize_result file open failed !!";
+    return false;
   }
+  file << "x, y, dy, ddy" << std::endl;
+
+  std::cout << "***** optimize result ****** [x, y, dy, ddy]" << std::endl;
+  for (int i = 0; i < num_of_knots; ++i) {
+    // std::cout << i * optimize_segment_dis_ << y[i] << ", " << dy[i] << ", "
+    //           << ddy[i] << std::endl;
+    file << i * optimize_segment_dis_ << ", " << y[i] << ", " << dy[i] << ", "
+         << ddy[i] << std::endl;
+  }
+  file.close();
   std::cout << "goal_pose[x, y, yaw] : [" << goal_pose_.position.x << ", "
             << goal_pose_.position.y << ", "
             << tf::getYaw(goal_pose_.orientation) << "]" << std::endl;
@@ -109,13 +123,24 @@ void HybridAstar::GetReferenceLine(std::vector<double>* const ref_line) {
     // ref_line->at(i) = FindNearstY(ref_line_, curr_x);
   }
 
+  std::ofstream file;
+  file.open("/home/by/Desktop/unit_ECO_single_result/process_ref_line.csv",
+            std::ios_base::out);
+  if (!file.is_open()) {
+    std::cout << "prime boundary file open failed !!";
+    return;
+  }
+  file << "x, ref" << std::endl;
+
   std::cout << "******* optimize ref line: [x, ref]" << std::endl;
 
   for (int i = 0; i < ref_line->size(); ++i) {
     double curr_x = i * optimize_segment_dis_;
 
-    std::cout << "[" << curr_x << ", " << ref_line->at(i) << "]" << std::endl;
+    // std::cout << "[" << curr_x << ", " << ref_line->at(i) << "]" << std::endl;
+    file << curr_x << ", " << ref_line->at(i) << std::endl;
   }
+  file.close();
 }
 
 void HybridAstar::GetxBounds(
@@ -131,11 +156,24 @@ void HybridAstar::GetxBounds(
       const auto& obs = obstacles_list_[i];
 
       if (obstacles_info_.obstacles[i].path_decision == "left") {
-        left_decision_obs_frame.push_back(GetObjectMinMaxFrame(obs));
+        const auto obs_min_max_box = GetObjectMinMaxFrame(obs);
+        left_decision_obs_frame.push_back(obs_min_max_box);
+        std::cout
+            << "obstacle min_max_boundary:[min_x, max_x, min_y, max_y] : ["
+            << obs_min_max_box[0] << ", " << obs_min_max_box[1] << ", "
+            << obs_min_max_box[2] << ", " << obs_min_max_box[3] << "]"
+            << std::endl;
       }
 
       if (obstacles_info_.obstacles[i].path_decision == "right") {
-        right_decision_obs_frame.push_back(GetObjectMinMaxFrame(obs));
+        const auto obs_min_max_box = GetObjectMinMaxFrame(obs);
+
+        right_decision_obs_frame.push_back(obs_min_max_box);
+        std::cout
+            << "obstacle min_max_boundary:[min_x, max_x, min_y, max_y] : ["
+            << obs_min_max_box[0] << ", " << obs_min_max_box[1] << ", "
+            << obs_min_max_box[2] << ", " << obs_min_max_box[3] << "]"
+            << std::endl;
       }
     }
   }
@@ -175,13 +213,25 @@ void HybridAstar::GetxBounds(
         x_bounds->at(i).second - (vehicle_minmax_box[3] - nearst_point.y);
   }
 
+  std::ofstream file;
+  file.open("/home/by/Desktop/unit_ECO_single_result/process_bounds.csv",
+            std::ios_base::out);
+  if (!file.is_open()) {
+    std::cout << "process_bounds file open failed !!";
+    return;
+  }
+  file << "x, l, u" << std::endl;
+
   // print boundary limit
   std::cout << "******* optimize left and right: [x, right, left]" << std::endl;
   for (int i = 0; i < num_of_knots; ++i) {
     const auto& bounds = x_bounds->at(i);
-    std::cout << "[" << i * optimize_segment_dis_ << ", " << bounds.first
-              << ", " << bounds.second << "]" << std::endl;
+    // std::cout << "[" << i * optimize_segment_dis_ << ", " << bounds.first
+    //           << ", " << bounds.second << "]" << std::endl;
+    file << i * optimize_segment_dis_ << ", " << bounds.first << ", "
+         << bounds.second << std::endl;
   }
+  file.close();
 }
 
 double HybridAstar::FindNearstY(const std::vector<geometry_msgs::Point>& line,
