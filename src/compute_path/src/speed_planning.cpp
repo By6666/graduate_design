@@ -100,7 +100,7 @@ void HybridAstar::CalculateObsSTBox(
     std::vector<std::array<double, 3>> st_obs_box;
 
     for (int i = 0; i < obs_path.size(); ++i) {
-      double curr_t = 15.0 + i * obs_path_duration_;
+      double curr_t = obstacle.delay_time + i * obs_path_duration_;
 
       geometry_msgs::Point temp_point;
       temp_point.x = obs_path[i].x * cos(temp_center.z) -
@@ -277,7 +277,7 @@ void HybridAstar::GetReferenceV(math::common::References* const ref_v) {
       ref_v->AppendReference(curr_t, it->v);
       std::cout << curr_t << ", " << it->v << std::endl;
     } else {
-      ref_v->AppendReference(curr_t, speed_planning_v_ref_);
+      ref_v->AppendReference(curr_t, 0.0);
       std::cout << curr_t << ", " << speed_planning_v_ref_ << std::endl;
     }
   }

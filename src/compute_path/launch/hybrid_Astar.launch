@@ -45,7 +45,7 @@
 
         <arg name="obs_path_box_seg" value="6" />
 
-        <arg name="obstacle_file_path" value="$(find hollow_create)/obstacles_json/obstacles0.json" />
+        <arg name="obstacle_file_path" value="$(find hollow_create)/obstacles_json/obstacles2.json" />
     </include>
 
     <!-- eco references create -->
@@ -97,7 +97,7 @@
 
     <!-- speed planning -->
     <arg name="obs_path_duration" default="0.1" />
-    <arg name="total_time" default="300.0" />
+    <arg name="total_time" default="220.0" />
     <arg name="total_length" default="1400.0" /> 
     <arg name="init_v" default="0.0" />
     <arg name="init_a" default="0.0" />
