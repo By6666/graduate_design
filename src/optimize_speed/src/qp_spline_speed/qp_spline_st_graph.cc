@@ -71,7 +71,7 @@ void QpSplineStGraph::SetCondition(const CommonPoint& init_point,
 bool QpSplineStGraph::Solve(SpeedData* const speed_data) {
   // Reset spline generator
 
-  spline_generator_->Reset(t_knots_, FLAGS_spline_order);
+  // spline_generator_->Reset(t_knots_, FLAGS_spline_order);
 
   // Add constraint
   if (!AddConstraint()) {
@@ -182,11 +182,11 @@ bool QpSplineStGraph::AddConstraint() {
     return false;
   }
 
-  if (!constraint->AddPointSecondDerivativeConstraint(0.0,
-                                                      init_point_.y_ddot())) {
-    AERROR << "Add st start point accelerate constraint failed!";
-    return false;
-  }
+  // if (!constraint->AddPointSecondDerivativeConstraint(0.0,
+  //                                                     init_point_.y_ddot())) {
+  //   AERROR << "Add st start point accelerate constraint failed!";
+  //   return false;
+  // }
 
   // monotone constraint
   if (!constraint->AddMonotoneInequalityConstraint(t_evaluated_)) {
@@ -286,6 +286,7 @@ bool QpSplineStGraph::AddKernel() {
       AERROR << "Add cruise reference failed!";
       return false;
     }
+    AERROR << "add s ref successful !!" << std::endl;
   }
 
   if (FLAGS_speed_kernel_weight > 0 && v_refs_.reference_points().size() > 0) {
@@ -293,6 +294,7 @@ bool QpSplineStGraph::AddKernel() {
       AERROR << "Add speed reference failed!";
       return false;
     }
+    AERROR << "add v ref successful !!" << std::endl;
   }
 
   if (spline_kernel->AddReferenceKernelToMainKernel() == false) {
@@ -346,7 +348,7 @@ bool QpSplineStGraph::AddSpeedRefKernel(const double weight) {
   CommonGetReferenceForSolve(v_refs_, &t_coord, &v_refs);
 
   spline_kernel->AddReferenceSpeedKernelMatrix(
-      t_coord, v_refs, weight * FLAGS_total_time / t_coord.size());
+      t_coord, v_refs, weight * FLAGS_total_time / t_evaluated_.size());
 
   return true;
 }

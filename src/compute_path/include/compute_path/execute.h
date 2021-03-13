@@ -14,6 +14,7 @@ inline void ImportInfo(const ObsInfo& obs_info, const TruckInfo& truck_info,
   hybrid_astar.set_ref_line() = route_info.get_ref_line();
   hybrid_astar.set_left_boundary() = route_info.get_left_boundary();
   hybrid_astar.set_right_boundary() = route_info.get_right_boundary();
+  hybrid_astar.set_eco_refs_info() = route_info.get_eco_references();
 
   hybrid_astar.set_goal_pose() = truck_info.get_goal_pose();
   hybrid_astar.set_start_pose() = truck_info.get_start_pose();

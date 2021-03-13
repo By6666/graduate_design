@@ -21,6 +21,7 @@
 #include "qp_spline_speed/speed_data.h"
 
 #include <iostream>
+#include <fstream>
 #include <algorithm>
 #include <utility>
 #include <glog/logging.h>
@@ -102,11 +103,22 @@ void SpeedData::DebugString() const {
   //         speed_vector_.begin(), speed_vector_.begin() + limit, ",\n"),
   //     "]\n");
 
+  std::ofstream file;
+  file.open("/home/by/Desktop/unit_ECO_single_result/opt_speed_result.csv",
+            std::ios_base::out);
+  if(!file.is_open()){
+    AERROR << "opt speed file open failed !!";
+    return;
+  }
+  file << "t, s, v, a, j" << std::endl;
   AERROR << "************ speed planning result [t, s, v, a, j]************";
   for (const auto& elem : speed_vector_) {
     std::cout << elem.x() << ", " << elem.y() << ", " << elem.y_dot() << ", "
               << elem.y_ddot() << ", " << elem.y_dddot() << "," << std::endl;
+    file << elem.x() << ", " << elem.y() << ", " << elem.y_dot() << ", "
+         << elem.y_ddot() << ", " << elem.y_dddot() << "," << std::endl;
   }
+  file.close();
 }
 
 }  // namespace qp_spline

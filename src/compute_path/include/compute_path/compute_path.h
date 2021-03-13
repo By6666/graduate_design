@@ -17,6 +17,7 @@
 #include "ros/ros.h"
 #include "tf/tf.h"
 #include "visualization_msgs/MarkerArray.h"
+#include "eco_references/EcoReferences.h"
 
 #include "common/limits.h"
 #include "common/references.h"
@@ -86,6 +87,9 @@ class HybridAstar {
   inline double& set_truck_length() { return truck_length_; }
   inline double& set_truck_base2back() { return truck_base2back_; }
   inline KDTreeSP::pointVec& set_bounder_info() { return bounder_info_; }
+  inline eco_references::EcoReferences& set_eco_refs_info() {
+    return eco_refs_;
+  }
 
   inline int get_angle_size() const { return angle_size_; }
   inline double get_move_step() const { return move_step_; }
@@ -170,6 +174,9 @@ class HybridAstar {
 
   geometry_msgs::Pose prime_start_pose_, prime_goal_pose_;
   geometry_msgs::Pose start_pose_, goal_pose_;
+
+  /* eco references path */
+  eco_references::EcoReferences eco_refs_;
 
   /* param for truck */
   double min_turning_radius_;

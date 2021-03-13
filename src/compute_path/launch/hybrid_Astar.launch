@@ -28,7 +28,7 @@
 
     <!-- road_line set param -->
     <include file="$(find road_line)/launch/road_line.launch">
-        <arg name="file_name" value="$(find road_line)/ditu3.txt"/>
+        <arg name="file_name" value="$(find road_line)/ditu4.txt"/>
         <arg name="road_left_width" value="10.0"/>
         <arg name="road_right_width" value="10.0"/>
         <arg name="back_forward_reselution" value="1.0" />
@@ -45,7 +45,12 @@
 
         <arg name="obs_path_box_seg" value="6" />
 
-        <arg name="obstacle_file_path" value="$(find hollow_create)/obstacles_json/obstacles2.json" />
+        <arg name="obstacle_file_path" value="$(find hollow_create)/obstacles_json/obstacles0.json" />
+    </include>
+
+    <!-- eco references create -->
+    <include file="$(find eco_references)/launch/eco_references.launch">
+        <arg name="file_name" value="$(find eco_references)/eco_result/result-final800.csv" />
     </include>
     
     <!-- compute_pth set param -->
@@ -92,10 +97,10 @@
 
     <!-- speed planning -->
     <arg name="obs_path_duration" default="0.1" />
-    <arg name="total_time" default="8.0" />
-    <arg name="total_length" default="200.0" />
+    <arg name="total_time" default="120.0" />
+    <arg name="total_length" default="800.0" />
     <arg name="condition_duration" default="0.1" />
-    <arg name="init_v" default="12.0" />
+    <arg name="init_v" default="0.0" />
     <arg name="init_a" default="0.0" />
     <arg name="v_ref" default="12.0" />
     <arg name="v_limit" default="13.89" />

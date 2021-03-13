@@ -1,3 +1,5 @@
+#include <fstream>
+
 #include "compute_path/compute_path.h"
 
 #include "qp_spline_speed/qp_spline_st_graph.h"
@@ -23,7 +25,7 @@ bool HybridAstar::SpeedPlanning() {
   std::cout << "[init_v, init_a, v_ref, v_limit, a_min, a_max]:["
             << speed_planning_init_v_ << ", " << speed_planning_init_a_ << ", "
             << speed_planning_v_ref_ << ", " << speed_planning_v_limit_ << ", "
-            << -4.0 << ", " << 4.0 << "]" << std::endl;
+            << -4.0 << ", " << 3.0 << "]" << std::endl;
 
   // using mlp to decision
   SpeedDecisionProcess();
@@ -98,7 +100,7 @@ void HybridAstar::CalculateObsSTBox(
     std::vector<std::array<double, 3>> st_obs_box;
 
     for (int i = 0; i < obs_path.size(); ++i) {
-      double curr_t = i * obs_path_duration_;
+      double curr_t = 15.0 + i * obs_path_duration_;
 
       geometry_msgs::Point temp_point;
       temp_point.x = obs_path[i].x * cos(temp_center.z) -
@@ -160,12 +162,21 @@ void HybridAstar::CalculateObsSTBox(
     st_obs_boxes->push_back(st_obs_box);
   }
 
+  std::ofstream file;
+  file.open("/home/by/Desktop/unit_ECO_single_result/obs_box.csv",
+            std::ios_base::out);
+  if(!file.is_open()){
+    std::cout << "obstacle boxing file open failed !!";
+    return;
+  }
+  file << "t, ls, up" << std::endl;
   // for obstacle ST bounding box display
   std::cout << "obstacle bounding box in ST, [t, ls, up]" << std::endl;
   for (const auto& st_obs_boxe : *st_obs_boxes) {
     for (const auto& elem : st_obs_boxe) {
       std::cout << elem[0] << ", " << elem[1] << ", " << elem[2] << ","
                 << std::endl;
+      file << elem[0] << ", " << elem[1] << ", " << elem[2] << "," << std::endl;
     }
   }
 }
@@ -204,10 +215,20 @@ void HybridAstar::GetSLimits(
     s_limits->AppendLimit(curr_t, s_low, s_up);
   }
 
+  std::ofstream file;
+  file.open("/home/by/Desktop/unit_ECO_single_result/s_limits.csv",
+            std::ios_base::out);
+  if (!file.is_open()) {
+    std::cout << "opt s limits open failed !!" << std::endl;
+    return;
+  }
+  file << "t, sl, su" << std::endl;
   std::cout << "s limits ********  [t, sl, su]" << std::endl;
   for (const auto& elem : s_limits->limit_points()) {
     std::cout << elem.x() << ", " << elem.l() << ", " << elem.u() << ","
               << std::endl;
+    file << elem.x() << ", " << elem.l() << ", " << elem.u() << ","
+         << std::endl;
   }
 }
 
@@ -219,15 +240,27 @@ void HybridAstar::GetVLimits(math::common::Limits* const v_limits) {
 }
 
 void HybridAstar::GetReferenceS(math::common::References* const ref_s) {
+  const auto cmp = [](const eco_references::EcoReferencesPoint& point,
+                      double t) { return point.t < t; };
+  const auto& eco_path = eco_refs_.eco_ref_path;
   for (int i = 0; i < condition_t_konts_nums_; ++i) {
     double curr_t = i * speed_planning_condition_duration_;
-    ref_s->AppendReference(curr_t, speed_planning_total_length_);
+    auto it = std::lower_bound(eco_path.begin(), eco_path.end(), curr_t, cmp);
+    // ref_s->AppendReference(curr_t, speed_planning_total_length_);
+    // ref_s->AppendReference(curr_t, curr_t * speed_planning_v_ref_);
+    ref_s->AppendReference(curr_t, it->s);
+
   }
 }
 
 void HybridAstar::GetReferenceV(math::common::References* const ref_v) {
-  for (int i = 0; i < 80; ++i) {
-    double curr_t = i * 0.1;
-    ref_v->AppendReference(curr_t, speed_planning_v_ref_);
+  const auto cmp = [](const eco_references::EcoReferencesPoint& point,
+                      double t) { return point.t < t; };
+  const auto& eco_path = eco_refs_.eco_ref_path;
+  for (int i = 0; i < condition_t_konts_nums_; ++i) {
+    double curr_t = i * speed_planning_condition_duration_;
+    // ref_v->AppendReference(curr_t, speed_planning_v_ref_);
+    auto it = std::lower_bound(eco_path.begin(), eco_path.end(), curr_t, cmp);
+    ref_v->AppendReference(curr_t, it->v);
   }
 }

@@ -1,0 +1,21 @@
+<launch>
+
+    <!-- <arg name="file_name" /> -->
+    <arg name="file_name"/>
+
+    <node pkg="eco_references" name="eco_references" type="pull_eco_references.py" >
+        <param name="file_name" type="string" value="$(arg file_name)" />
+    </node>
+
+    <!-- <node pkg="hollow_create" name="obstacles_display" type="hollow_create" >
+        <param name="yaw" type="double" value="$(arg yaw)" />
+        <param name="size_x" type="double" value="$(arg size_x)" />
+        <param name="size_y" type="double" value="$(arg size_y)" />
+        <param name="place_x" type="double" value="$(arg place_x)" />
+        <param name="place_y" type="double" value="$(arg place_y)" />
+
+        <param name="obs_path_box_seg" type="int" value="$(arg obs_path_box_seg)" />
+    </node> -->
+
+
+</launch>

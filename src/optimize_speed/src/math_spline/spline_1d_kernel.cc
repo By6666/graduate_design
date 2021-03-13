@@ -195,13 +195,11 @@ bool Spline1dKernel::AddReferenceSpeedKernelMatrix(const std::vector<double>& x_
 
     double cur_x = 1.0;
     std::vector<double> power_x;
+    power_x.emplace_back(0.0);
+    power_x.emplace_back(0.0);
     for (uint32_t n = 0; n + 1 < 2 * num_params; ++n) {
-      if (n < 2) {
-        power_x.emplace_back(0.0);
-      } else {
-        power_x.emplace_back(cur_x);
-        cur_x *= cur_rel_x;
-      }
+      power_x.emplace_back(cur_x);
+      cur_x *= cur_rel_x;
     }
 
     for (uint32_t r = 0; r < num_params; ++r) {

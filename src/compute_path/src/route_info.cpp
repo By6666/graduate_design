@@ -6,7 +6,8 @@ RouteInfo::RouteInfo()
     : bounder_ok_(false),
       ref_line_ok_(false),
       left_boundary_ok_(false),
-      right_boundary_ok_(false) {}
+      right_boundary_ok_(false),
+      eco_ref_ok_(false) {}
 
 void RouteInfo::BounderInfoCall(const nav_msgs::PathConstPtr& msg) {
   std::vector<geometry_msgs::PoseStamped> buff = msg->poses;
@@ -79,5 +80,13 @@ void RouteInfo::RightBounderLineInfoCall(const nav_msgs::PathConstPtr& msg) {
     }
 
     right_boundary_ok_ = true;
+  }
+}
+
+void RouteInfo::EcoReferencesPathCall(
+    const eco_references::EcoReferencesConstPtr& msg) {
+  if (!eco_ref_ok_) {
+    eco_ref_ = *msg;
+    eco_ref_ok_ = true;
   }
 }

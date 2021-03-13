@@ -46,6 +46,11 @@ int main(int argc, char** argv) {
       nh.subscribe("road_line/right_bounder", 1,
                    &RouteInfo::RightBounderLineInfoCall, &route_info);
 
+  // subscribe eco references topic, get eco_references
+  ros::Subscriber eco_sub =
+      nh.subscribe("/eco_references/eco_path", 1,
+                   &RouteInfo::EcoReferencesPathCall, &route_info);
+
   // start prime sub
   ros::Subscriber prime_start_sub = nh.subscribe(
       "road_line/start_pose", 1, &TruckInfo::StartPoseCallback, &truck_info);

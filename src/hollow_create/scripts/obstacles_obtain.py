@@ -30,12 +30,17 @@ for obstacle in obstacles_json:
   obs_temp.obs_box.y = obstacle['obs_box']['y']
   obs_temp.obs_box.z = obstacle['obs_box']['z']
 
-  # obstacle center
+  #yield case obstacle center
   obs_temp.center.x = 16.0
   obs_temp.center.y = 15.0
   obs_temp.center.z = -35.0 / 57.3
 
-  # # path planning obstacle center point
+  # # overtake case obstacle center
+  # obs_temp.center.x = 36.0
+  # obs_temp.center.y = 10.0
+  # obs_temp.center.z = -180 / 57.3
+
+  # # # path planning obstacle center point
   # obs_temp.center.x = 178.0260805534199
   # obs_temp.center.y = 492.6955370102078
   # obs_temp.center.z = 30
