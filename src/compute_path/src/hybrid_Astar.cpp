@@ -56,7 +56,7 @@ int main(int argc, char** argv) {
 
   // pub truck show info
   ros::Publisher truck_show_pub =
-      nh.advertise<visualization_msgs::MarkerArray>("truck_show", 1);
+      nh.advertise<visualization_msgs::MarkerArray>("truck_show", 10);
 
   ros::Publisher update_show_pub =
       nh.advertise<visualization_msgs::MarkerArray>("update_pose_show", 1);
