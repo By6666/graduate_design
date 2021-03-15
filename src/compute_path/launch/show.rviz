@@ -21,6 +21,8 @@ Panels:
         - /MarkerArray3
         - /MarkerArray3/Namespaces1
         - /BoundingBoxArray2
+        - /left_bounds_21
+        - /right_bound_21
       Splitter Ratio: 0.5
     Tree Height: 484
   - Class: rviz/Selection
@@ -93,7 +95,7 @@ Visualization Manager:
         final_path: false
         prime_path: false
         start_pose: false
-        update_pass_pose: true
+        update_pass_pose: false
       Queue Size: 100
       Value: true
     - Class: jsk_rviz_plugin/BoundingBoxArray
@@ -200,7 +202,7 @@ Visualization Manager:
       Topic: /road_line/forward_bounder
       Unreliable: false
       Value: true
-    - Alpha: 1
+    - Alpha: 0.5
       Buffer Length: 1
       Class: rviz/Path
       Color: 255; 0; 0
@@ -243,6 +245,52 @@ Visualization Manager:
       line width: 0.0799999982
       only edge: true
       show coords: false
+    - Alpha: 0.100000001
+      Buffer Length: 1
+      Class: rviz/Path
+      Color: 255; 255; 255
+      Enabled: true
+      Head Diameter: 0.300000012
+      Head Length: 0.200000003
+      Length: 0.300000012
+      Line Style: Lines
+      Line Width: 0.0299999993
+      Name: left_bounds_2
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Pose Color: 255; 85; 255
+      Pose Style: None
+      Radius: 0.0299999993
+      Shaft Diameter: 0.100000001
+      Shaft Length: 0.100000001
+      Topic: /road_line/left_bounder_2
+      Unreliable: false
+      Value: true
+    - Alpha: 0.100000001
+      Buffer Length: 1
+      Class: rviz/Path
+      Color: 255; 255; 255
+      Enabled: true
+      Head Diameter: 0.300000012
+      Head Length: 0.200000003
+      Length: 0.300000012
+      Line Style: Lines
+      Line Width: 0.0299999993
+      Name: right_bound_2
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Pose Color: 255; 85; 255
+      Pose Style: None
+      Radius: 0.0299999993
+      Shaft Diameter: 0.100000001
+      Shaft Length: 0.100000001
+      Topic: /road_line/right_bounder_2
+      Unreliable: false
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -267,7 +315,7 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Angle: 0.209999114
+      Angle: 0.419999003
       Class: rviz/TopDownOrtho
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
@@ -277,7 +325,7 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Scale: 12.1991558
+      Scale: 11.4803782
       Target Frame: <Fixed Frame>
       Value: TopDownOrtho (rviz)
       X: 187.511505

@@ -41,14 +41,14 @@ for obstacle in obstacles_json:
   # obs_temp.center.z = -180 / 57.3
 
   # # path planning obstacle center point, right
-  # obs_temp.center.x = 178.0260805534199
-  # obs_temp.center.y = 492.6955370102078
-  # obs_temp.center.z = 30/57.3
+  obs_temp.center.x = 178.0260805534199
+  obs_temp.center.y = 492.6955370102078
+  obs_temp.center.z = 30/57.3
 
   # path planning obstacle center point, left
-  obs_temp.center.x = 178.0260805534199
-  obs_temp.center.y = 491.6955370102078
-  obs_temp.center.z = 30/57.3
+  # obs_temp.center.x = 178.0260805534199
+  # obs_temp.center.y = 491.6955370102078
+  # obs_temp.center.z = 30/57.3
 
 
   # obstacle path

@@ -64,7 +64,7 @@ bool HybridAstar::OptimizerProcess() {
   optimizer.set_layers()[0].SetTarget(goal_state[0], num_of_knots - 1);
   optimizer.set_layers()[0].SetWeight(1000.0, num_of_knots - 1);
   optimizer.set_layers()[1].SetTarget(goal_state[1], num_of_knots - 1);
-  optimizer.set_layers()[1].SetWeight(1e2, num_of_knots - 1);
+  optimizer.set_layers()[1].SetWeight(1e1, num_of_knots - 1);
 
   // go optimize
   auto optimize_result = optimizer.Optimize();

@@ -17,7 +17,7 @@
     <arg name="heur_reference_line_cof" value="40.0" />
 
     <!-- final path convert -->
-    <arg name="final_path_convert_flg" value="false" />
+    <arg name="final_path_convert_flg" value="true" />
 
 
     <!-- discrete map param -->
@@ -29,8 +29,8 @@
     <!-- road_line set param -->
     <include file="$(find road_line)/launch/road_line.launch">
         <arg name="file_name" value="$(find road_line)/ditu2.txt"/>
-        <arg name="road_left_width" value="10.0"/>
-        <arg name="road_right_width" value="10.0"/>
+        <arg name="road_left_width" value="5.4"/>
+        <arg name="road_right_width" value="5.4"/>
         <arg name="back_forward_reselution" value="1.0" />
         <arg name="road_line_simple_seg_dis" value="2.0" />
     </include>
