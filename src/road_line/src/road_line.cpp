@@ -23,6 +23,12 @@ int main(int argc, char** argv) {
   ros::Publisher start_pub =
       nh.advertise<geometry_msgs::Pose>("start_pose", 1, true);
 
+
+  ros::Publisher left_bounder_2 =
+      nh.advertise<nav_msgs::Path>("left_bounder_2", 1, true);
+  ros::Publisher right_bounder_2 =
+      nh.advertise<nav_msgs::Path>("right_bounder_2", 1, true);
+
   RoadLine road;
 
   // subscribe start pose
@@ -52,6 +58,9 @@ int main(int argc, char** argv) {
     forward_bounder.publish(road.get_forward_bounder());
     center_line.publish(road.get_center_line());
     all_bounder.publish(road.get_all_bounder());
+
+    left_bounder_2.publish(road.get_left_bounder_2());
+    right_bounder_2.publish(road.get_right_bounder_2());
 
     ros::Duration(0.2).sleep();
   }
