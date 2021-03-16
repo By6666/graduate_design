@@ -19,6 +19,11 @@ RoadLine::RoadLine() {
   road_back_bounder_.header.frame_id = "global";
   road_forward_bounder_.header.frame_id = "global";
   road_center_line_.header.frame_id = "global";
+
+  road_left_bounder_2_.header.frame_id = "global";
+  road_right_bounder_2_.header.frame_id = "global";
+  road_left_bounder_3_.header.frame_id = "global";
+  road_right_bounder_3_.header.frame_id = "global";
 }
 
 /**
@@ -34,6 +39,31 @@ void RoadLine::CreateOriginBounder() {
   for (int i = 1; i < point_nums; ++i) {
     origin_bounder_.emplace_back(
         0.0, origin_bounder_.back().y - back_forward_reselution_, 0.0);
+  }
+
+  double road_left_width_2 = 5.4;
+  double road_right_width_2 = 5.4;
+
+  point_nums = std::ceil((road_left_width_2 + road_right_width_2) /
+                             back_forward_reselution_);
+  origin_bounder_2_.clear();
+  origin_bounder_2_.reserve(point_nums);
+  origin_bounder_2_.emplace_back(0.0, road_left_width_2, 0.0);
+    for (int i = 1; i <= point_nums; ++i) {
+    origin_bounder_2_.emplace_back(
+        0.0, origin_bounder_2_.back().y - back_forward_reselution_, 0.0);
+  }
+
+  double road_left_width_3 = 1.8;
+  double road_right_width_3 = 1.8;
+  point_nums = std::ceil((road_left_width_3 + road_right_width_3) /
+                         back_forward_reselution_);
+  origin_bounder_3_.clear();
+  origin_bounder_3_.reserve(point_nums);
+  origin_bounder_3_.emplace_back(0.0, road_left_width_3, 0.0);
+  for (int i = 1; i <= point_nums; ++i) {
+    origin_bounder_3_.emplace_back(
+        0.0, origin_bounder_3_.back().y - back_forward_reselution_, 0.0);
   }
 }
 
@@ -118,8 +148,15 @@ void RoadLine::CreateRoadBounder() {
   road_center_line_.poses.clear();
   all_bounder_.poses.clear();
 
+  road_left_bounder_2_.poses.clear();
+  road_right_bounder_2_.poses.clear();
+  road_left_bounder_3_.poses.clear();
+  road_right_bounder_3_.poses.clear();
+
   geometry_msgs::PoseStamped temp;
   temp.header.frame_id = "global";
+
+
 
   for (int i = 0; i < prime_road_.size(); ++i) {
     temp.pose = PoseTransform(prime_road_[i], origin_bounder_.front());
@@ -132,6 +169,18 @@ void RoadLine::CreateRoadBounder() {
 
     temp.pose = PoseTransform(prime_road_[i], RoadXY(0.0, 0.0, 0.0));
     road_center_line_.poses.push_back(temp);
+
+    temp.pose = PoseTransform(prime_road_[i], origin_bounder_2_.front());
+    road_left_bounder_2_.poses.push_back(temp);
+
+    temp.pose = PoseTransform(prime_road_[i], origin_bounder_2_.back());
+    road_right_bounder_2_.poses.push_back(temp);
+
+    temp.pose = PoseTransform(prime_road_[i], origin_bounder_3_.front());
+    road_left_bounder_3_.poses.push_back(temp);
+
+    temp.pose = PoseTransform(prime_road_[i], origin_bounder_3_.back());
+    road_right_bounder_3_.poses.push_back(temp);
   }
 
   for (auto& elem : origin_bounder_) {
@@ -147,8 +196,8 @@ void RoadLine::CreateRoadBounder() {
 void RoadLine::UpgrateParam() {
   ros::NodeHandle private_nh("~");
 
-  private_nh.param<double>("road_left_width", road_left_width_, 10.0);
-  private_nh.param<double>("road_right_width", road_right_width_, 10.0);
+  private_nh.param<double>("road_left_width", road_left_width_, 5.4);
+  private_nh.param<double>("road_right_width", road_right_width_, 5.4);
   private_nh.param<double>("back_forward_reselution", back_forward_reselution_,
                            0.1);
   CreateOriginBounder();

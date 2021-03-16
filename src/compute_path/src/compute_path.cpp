@@ -700,7 +700,7 @@ bool HybridAstar::ExecuteHybridAstar() {
 
   bool path_flg = FinalPath();
 
-  bool speed_flg = SpeedPlanning();
+  // bool speed_flg = SpeedPlanning();
 
   // path frame convert
   if (final_path_convert_flg_) {

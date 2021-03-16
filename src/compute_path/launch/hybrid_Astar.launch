@@ -31,7 +31,7 @@
         <arg name="file_name" value="$(find road_line)/ditu4.txt"/>
         <arg name="road_left_width" value="10.0"/>
         <arg name="road_right_width" value="10.0"/>
-        <arg name="back_forward_reselution" value="1.0" />
+        <arg name="back_forward_reselution" value="0.1" />
         <arg name="road_line_simple_seg_dis" value="2.0" />
     </include>
 

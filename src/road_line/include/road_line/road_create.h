@@ -45,6 +45,19 @@ class RoadLine {
     return start_pose_;
   }
 
+  inline const nav_msgs::Path& get_left_bounder_2() const {
+    return road_left_bounder_2_;
+  }
+  inline const nav_msgs::Path& get_right_bounder_2() const {
+    return road_right_bounder_2_;
+  }
+  inline const nav_msgs::Path& get_left_bounder_3() const {
+    return road_left_bounder_3_;
+  }
+  inline const nav_msgs::Path& get_right_bounder_3() const {
+    return road_right_bounder_3_;
+  }
+
  private:
   struct RoadXY {
     double x;
@@ -60,11 +73,16 @@ class RoadLine {
   std::string file_name_;
   std::vector<RoadXY> prime_road_;
   std::vector<RoadXY> origin_bounder_;
+  std::vector<RoadXY> origin_bounder_2_;
+  std::vector<RoadXY> origin_bounder_3_;
   geometry_msgs::Pose start_pose_, goal_pose_;
   nav_msgs::Path all_bounder_;
   nav_msgs::Path road_left_bounder_, road_right_bounder_;
   nav_msgs::Path road_back_bounder_, road_forward_bounder_;
   nav_msgs::Path road_center_line_;
+
+  nav_msgs::Path road_left_bounder_2_,road_right_bounder_2_;
+  nav_msgs::Path road_left_bounder_3_,road_right_bounder_3_;
 
   void CreateOriginBounder();
   geometry_msgs::Pose PoseTransform(const RoadXY& central, const RoadXY& pose);
