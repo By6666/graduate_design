@@ -38,8 +38,8 @@ for obstacle in obstacles_json:
   else:
     #yield case obstacle center
     obs_temp.center.x = 106.0
-    obs_temp.center.y = 15.0
-    obs_temp.center.z = -35.0 / 57.3
+    obs_temp.center.y = 3.6
+    obs_temp.center.z = 0.0
     obs_temp.delay_time = 25.0
 
   # # overtake case obstacle center

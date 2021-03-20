@@ -45,7 +45,7 @@
 
         <arg name="obs_path_box_seg" value="6" />
 
-        <arg name="obstacle_file_path" value="$(find hollow_create)/obstacles_json/obstacles2.json" />
+        <arg name="obstacle_file_path" value="$(find hollow_create)/obstacles_json/obstacles10.json" />
     </include>
 
     <!-- eco references create -->
