@@ -113,7 +113,7 @@ Visualization Manager:
       Buffer Length: 1
       Class: rviz/Path
       Color: 255; 255; 255
-      Enabled: false
+      Enabled: true
       Head Diameter: 0.300000012
       Head Length: 0.200000003
       Length: 0.300000012
@@ -131,12 +131,12 @@ Visualization Manager:
       Shaft Length: 0.100000001
       Topic: /road_line/left_bounder
       Unreliable: false
-      Value: false
+      Value: true
     - Alpha: 1
       Buffer Length: 1
       Class: rviz/Path
       Color: 255; 255; 255
-      Enabled: false
+      Enabled: true
       Head Diameter: 0.300000012
       Head Length: 0.200000003
       Length: 0.300000012
@@ -154,7 +154,7 @@ Visualization Manager:
       Shaft Length: 0.100000001
       Topic: /road_line/right_bounder
       Unreliable: false
-      Value: false
+      Value: true
     - Alpha: 1
       Buffer Length: 1
       Class: rviz/Path
@@ -324,7 +324,7 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Scale: 18.3605957
+      Scale: 17.0761604
       Target Frame: <Fixed Frame>
       Value: TopDownOrtho (rviz)
       X: 34.1839905
