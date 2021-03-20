@@ -209,7 +209,7 @@ void HybridAstar::GetxBounds(
 
     geometry_msgs::Pose temp_point;
     temp_point.position.x = i * optimize_segment_dis_;
-    temp_point.position.y = bounds.first;
+    temp_point.position.y = bounds.first+8;
     temp_point.orientation = tf::createQuaternionMsgFromYaw(0.0);
 
     geometry_msgs::Pose temp_point2 =
@@ -217,7 +217,7 @@ void HybridAstar::GetxBounds(
 
     // geometry_msgs::Pose temp_point;
     temp_point.position.x = i * optimize_segment_dis_;
-    temp_point.position.y = bounds.second;
+    temp_point.position.y = bounds.second-7;
     temp_point.orientation = tf::createQuaternionMsgFromYaw(0.0);
 
     geometry_msgs::Pose temp_point3 =
